@@ -66,6 +66,7 @@ video::cue{font-size:1.1em}
 .fs #fsin.hide,.pfs #fsin.hide{opacity:0;pointer-events:none;transform:translateY(10px)}
 #fsin input{flex:1;min-width:0;background:transparent;color:#fff;border:0;border-radius:18px;padding:6px 10px;font-size:16px;outline:0}
 #fsin input:focus{border:0;box-shadow:none}
+#tg svg{fill:currentColor;stroke:none}
 #fsd{width:34px;height:34px;flex:none;display:grid;place-items:center;padding:0;border:0;border-radius:16px;background:var(--ac);color:var(--bg);cursor:pointer}
 #fsd svg{width:17px;height:17px;fill:currentColor}
 .fs #bub,.pfs #bub{bottom:120px}
@@ -112,6 +113,10 @@ video::cue{font-size:1.1em}
 .sys{align-self:center;font-size:12px;color:var(--mut)}
 #ov{position:fixed;inset:0;z-index:99;pointer-events:none;opacity:0;-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);background:color-mix(in srgb,var(--bg) 40%,transparent);transition:opacity .6s var(--ease)}
 #ov.on{opacity:1}
+.modal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.modal.on{display:flex}
+.mcard{width:min(320px,90vw);display:grid;gap:12px;text-align:center;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:18px;box-shadow:0 16px 50px #0006}
+.mtitle{font-weight:700;font-size:16px}
 #toast{position:fixed;top:calc(env(safe-area-inset-top) + 10px);left:50%;transform:translate(-50%,-80px);background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:8px 16px;z-index:100;transition:transform .7s var(--ease);font-size:13px;max-width:90%;text-align:center}
 #toast.on{transform:translate(-50%,0)}
 .code{font:700 34px ui-monospace,Menlo,monospace;letter-spacing:.3em;color:var(--ac);direction:ltr}
@@ -135,8 +140,14 @@ video::cue{font-size:1.1em}
     <input type="text" id="jc" data-p="code" maxlength="6" autocapitalize="characters" autocomplete="off" style="text-align:center;letter-spacing:.3em;direction:ltr">
     <button class="btn" id="jn" data-i="join"></button>
   </div>
-  <div class="row"><button class="btn" id="l1" data-act="lang"></button><button class="btn" data-act="theme" data-i="theme"></button></div>
+  <div class="row"><button class="ic" id="l1" data-act="lang" data-i="lang" aria-label="Language"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg></button><button class="ic" data-act="theme" data-i="theme" aria-label="Theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg></button><button class="ic" id="tg" title="dev" aria-label="dev"><svg viewBox="0 0 24 24"><path d="M21.94 4.3 18.9 19.1c-.23 1.01-.84 1.26-1.7.78l-4.7-3.47-2.27 2.19c-.25.25-.46.46-.94.46l.34-4.8 8.74-7.9c.38-.34-.08-.53-.6-.19L7.48 14.1l-4.66-1.46c-1.01-.31-1.03-1.01.21-1.5l18.27-7.04c.85-.32 1.6.19 1.64 1.2z"/></svg></button></div>
 </section>
+
+<div id="namemod" class="modal"><div class="mcard">
+  <div class="mtitle" data-i="askname"></div>
+  <input type="text" id="namein" data-p="name" maxlength="20" autocomplete="off">
+  <button class="btn p" id="nameok" data-i="continue"></button>
+</div></div>
 
 <section id="app">
   <div class="top">
@@ -145,7 +156,8 @@ video::cue{font-size:1.1em}
     <button class="btn" id="cp" style="padding:4px 10px;font-family:ui-monospace,monospace;direction:ltr"></button>
     <button class="ic" data-act="theme" data-i="theme" aria-label="Theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg></button>
     <button class="ic" data-act="lang" data-i="lang" aria-label="Language"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg></button>
-    <button class="ic" id="del" data-i="delroom" title="حذف روم" aria-label="Delete room"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></div>
+    <button class="ic" id="del" data-i="delroom" title="حذف روم" aria-label="Delete room"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button>
+    <button class="ic" id="leave" data-i="leave" title="ترک روم" aria-label="Leave room"><svg viewBox="0 0 24 24"><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5M14 16l4-4-4-4M18 12H9"/></svg></button></div>
   </div>
 
   <div id="stage">
@@ -190,8 +202,8 @@ video::cue{font-size:1.1em}
 <script>
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
 const D={
-fa:{tag:"تماشای دو نفره با چت",name:"نام شما",code:"کد روم",create:"ساخت روم جدید",or:"یا",join:"ورود به روم",theme:"تم",ph:"یک فایل یا لینک انتخاب کنید",load:"پخش",file:"فایل ویدیو",adv:"پیشرفته",sync:"همگام",sub:"زیرنویس",subf:"فایل زیرنویس (srt/vtt)",off:"تنظیم تفاوت زمان (من نسبت به او)",apply:"اعمال",bub:"حباب چت در تمام‌صفحه",auto:"همگام‌سازی خودکار",send:"ارسال",msg:"پیام...",url:"لینک ویدیو یا صفحه فیلم",subu:"لینک زیرنویس",lang:"English",wait:"منتظر ورود نفر دوم",con:"متصل",dis:"قطع شد",copied:"کد کپی شد",reply:"پاسخ",joined:"به روم پیوست",joining:"در حال ورود به روم...",err:"روم پیدا نشد",limit:"حداکثر ۵ پیام در ۳ ثانیه",spam:"اسپم تشخیص داده شد؛ ورودی پیام ۱ دقیقه قفل شد",locked:"قفل به مدت",delroom:"حذف روم",delconfirm:"روم و تمام چت هایش حذف شود؟",deleted:"روم حذف شد",res:"در حال پیدا کردن لینک ویدیو...",pick:"طرف مقابل فایل را پخش کرد؛ همان فایل را انتخاب کنید",bad:"این فرمت/کدک در مرورگر پشتیبانی نمی‌شود",full:"روم پر است",bt:"بافر قبل از پخش (نت ضعیف)",cs:"دانلود کامل با چند اتصال، بعد پخش",bufing:"در حال بافر",pw:"منتظر آماده شدن طرف مقابل",recv:"دریافت فایل",sndf:"ارسال فایل",big:"فایل خیلی بزرگ است؛ طرف مقابل باید همان فایل را انتخاب کند",nocache:"دانلود چندبخشی ممکن نیست؛ پخش مستقیم"},
-en:{tag:"Watch together with chat",name:"Your name",code:"Room code",create:"Create new room",or:"or",join:"Join room",theme:"Theme",ph:"Pick a file or paste a link",load:"Play",file:"Video file",adv:"Advanced",sync:"Sync",sub:"Subtitles",subf:"Subtitle file (srt/vtt)",off:"Time offset (me vs. them)",apply:"Apply",bub:"Chat bubbles in fullscreen",auto:"Auto sync",send:"Send",msg:"Message...",url:"Video or page link",subu:"Subtitle link",lang:"فارسی",wait:"Waiting for partner",con:"Connected",dis:"Disconnected",copied:"Code copied",reply:"Reply",joined:"joined the room",joining:"Joining room...",err:"Room not found",limit:"Max 5 messages per 3 seconds",spam:"Spam detected; message input locked for 1 minute",locked:"Locked for",delroom:"Delete room",delconfirm:"Delete this room and all its chats?",deleted:"Room deleted",res:"Finding the video link...",pick:"Partner started a file; pick the same file",bad:"Format/codec not supported by this browser",full:"Room is full",bt:"Pre-buffer before play (slow net)",cs:"Parallel full download, then play",bufing:"Buffering",pw:"waiting for partner",recv:"Receiving file",sndf:"Sending file",big:"File too large to send; partner must pick the same file",nocache:"Parallel download unavailable; streaming directly"}};
+fa:{tag:"تماشای دو نفره با چت",name:"نام شما",code:"کد روم",create:"ساخت روم جدید",or:"یا",join:"ورود به روم",theme:"تم",ph:"یک فایل یا لینک انتخاب کنید",load:"پخش",file:"فایل ویدیو",adv:"پیشرفته",sync:"همگام",sub:"زیرنویس",subf:"فایل زیرنویس (srt/vtt)",off:"تنظیم تفاوت زمان (من نسبت به او)",apply:"اعمال",bub:"حباب چت در تمام‌صفحه",auto:"همگام‌سازی خودکار",send:"ارسال",msg:"پیام...",url:"لینک ویدیو یا صفحه فیلم",subu:"لینک زیرنویس",lang:"English",wait:"منتظر ورود نفر دوم",con:"متصل",dis:"قطع شد",copied:"کد کپی شد",reply:"پاسخ",joined:"به روم پیوست",joining:"در حال ورود به روم...",err:"روم پیدا نشد",limit:"حداکثر ۵ پیام در ۳ ثانیه",spam:"اسپم تشخیص داده شد؛ ورودی پیام ۱ دقیقه قفل شد",locked:"قفل به مدت",delroom:"حذف روم",delconfirm:"روم و تمام چت هایش حذف شود؟",deleted:"روم حذف شد",leave:"ترک روم",left:"روم را ترک کردید",askname:"چه نامی در چت نمایش داده شود؟",continue:"ادامه",res:"در حال پیدا کردن لینک ویدیو...",pick:"طرف مقابل فایل را پخش کرد؛ همان فایل را انتخاب کنید",bad:"این فرمت/کدک در مرورگر پشتیبانی نمی‌شود",full:"روم پر است",bt:"بافر قبل از پخش (نت ضعیف)",cs:"دانلود کامل با چند اتصال، بعد پخش",bufing:"در حال بافر",pw:"منتظر آماده شدن طرف مقابل",recv:"دریافت فایل",sndf:"ارسال فایل",big:"فایل خیلی بزرگ است؛ طرف مقابل باید همان فایل را انتخاب کند",nocache:"دانلود چندبخشی ممکن نیست؛ پخش مستقیم"},
+en:{tag:"Watch together with chat",name:"Your name",code:"Room code",create:"Create new room",or:"or",join:"Join room",theme:"Theme",ph:"Pick a file or paste a link",load:"Play",file:"Video file",adv:"Advanced",sync:"Sync",sub:"Subtitles",subf:"Subtitle file (srt/vtt)",off:"Time offset (me vs. them)",apply:"Apply",bub:"Chat bubbles in fullscreen",auto:"Auto sync",send:"Send",msg:"Message...",url:"Video or page link",subu:"Subtitle link",lang:"فارسی",wait:"Waiting for partner",con:"Connected",dis:"Disconnected",copied:"Code copied",reply:"Reply",joined:"joined the room",joining:"Joining room...",err:"Room not found",limit:"Max 5 messages per 3 seconds",spam:"Spam detected; message input locked for 1 minute",locked:"Locked for",delroom:"Delete room",delconfirm:"Delete this room and all its chats?",deleted:"Room deleted",leave:"Leave room",left:"Left the room",askname:"What name should appear in chat?",continue:"Continue",res:"Finding the video link...",pick:"Partner started a file; pick the same file",bad:"Format/codec not supported by this browser",full:"Room is full",bt:"Pre-buffer before play (slow net)",cs:"Parallel full download, then play",bufing:"Buffering",pw:"waiting for partner",recv:"Receiving file",sndf:"Sending file",big:"File too large to send; partner must pick the same file",nocache:"Parallel download unavailable; streaming directly"}};
 let L=localStorage.l||"fa",AJT=null,S={ws:null,members:0,spam:{},block:{},mt:[],host:false,app:false,reply:null,hls:null,dash:null};
 const T=k=>D[L][k]||k,v=$("#v"),stage=$("#stage");
 function i18n(){document.documentElement.lang=L;document.documentElement.dir=L=="fa"?"rtl":"ltr";
@@ -210,6 +222,7 @@ $("#nm").value=localStorage.n||"";i18n();
 
 /* ---------- networking (WebSocket relay + JSON on server) ---------- */
 const name=()=>($("#nm").value.trim()||"Guest").slice(0,20);
+function roomBtns(){$("#del").style.display=S.host?"":"none";$("#leave").style.display=S.host?"none":""}
 function enter(code){S.code=code;localStorage.n=name();localStorage.room=code;
 $("#cp").textContent=code;document.body.classList.add("in");
 history.replaceState(null,"",location.pathname+"?room="+encodeURIComponent(code));i18n()}
@@ -225,23 +238,32 @@ function connectWS(){return new Promise(res=>{
  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}rx(m)};
 })}
 const roomSecret=()=>{if(!localStorage.rt)localStorage.rt=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);return localStorage.rt};
-async function hostRoom(){clearTimeout(AJT);S.host=true;toast(T("joining"));const ws=await connectWS();if(!ws)return;send({t:"create",n:name(),secret:roomSecret()})}
-async function joinRoom(code,attempt){clearTimeout(AJT);code=(code||"").trim().replace(/^wp-/i,"").toUpperCase();
+function askName(){return new Promise(res=>{const m=$("#namemod"),inp=$("#namein");
+m.classList.add("on");inp.value=localStorage.n||$("#nm").value||"";setTimeout(()=>{inp.focus();inp.select()},50);
+const done=ok=>{m.classList.remove("on");inp.onkeydown=null;$("#nameok").onclick=null;
+const v=inp.value.trim().slice(0,20);if(ok&&v){$("#nm").value=v;localStorage.n=v;res(v)}else res(null)};
+$("#nameok").onclick=()=>done(true);
+inp.onkeydown=e=>{if(e.key=="Enter")done(true);if(e.key=="Escape")done(false)}});}
+async function hostRoom(){clearTimeout(AJT);if(!await askName())return;S.host=true;toast(T("joining"));const ws=await connectWS();if(!ws)return;send({t:"create",n:name(),secret:roomSecret()})}
+async function joinRoom(code,attempt,auto){clearTimeout(AJT);
+if((!auto||!localStorage.n)&&!attempt){if(!await askName())return}
+code=(code||"").trim().replace(/^wp-/i,"").toUpperCase();
 if(code.length<4){toast(T("err"));return}attempt=attempt||0;
 if(S.ws)try{S.ws.close()}catch(e){}
 S.host=false;toast(T("joining"));const ws=await connectWS();if(!ws)return;
 send({t:"join",room:code,n:name(),secret:roomSecret()});
-setTimeout(()=>{if(!S.code&&attempt<2)joinRoom(code,attempt+1);else if(!S.code)toast(T("err"))},6000)}
+setTimeout(()=>{if(!S.code&&attempt<2)joinRoom(code,attempt+1,auto);else if(!S.code)toast(T("err"))},6000)}
 const toB64=buf=>{const u=new Uint8Array(buf);let s="";for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
 const fromB64=str=>{const b=atob(str),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
 function rx(m){switch(m.t){
-case"joined":enter(m.code);S.host=!!m.host;S.members=Math.max(1,m.members||1);$("#dot").classList.add("on");i18n();
+case"joined":enter(m.code);S.host=!!m.host;S.members=Math.max(1,m.members||1);roomBtns();$("#dot").classList.add("on");i18n();
 (m.history||[]).forEach(msg=>addMsg(msg,false,true));
 if(S.host&&S.src)send({t:"src",u:S.src});
 if(S.lf)offer(S.lf);
 setTimeout(()=>send({t:"req"}),900);break;
 case"err":toast(m.msg||T("err"));if(/not found/i.test(m.msg||"")){delete localStorage.room;S.code=null;document.body.classList.remove("in");history.replaceState(null,"",location.pathname)}break;
 case"deleted":delete localStorage.room;S.code=null;S.members=0;document.body.classList.remove("in");history.replaceState(null,"",location.pathname);toast(T("deleted"));break;
+case"left":delete localStorage.room;S.code=null;S.members=0;document.body.classList.remove("in");history.replaceState(null,"",location.pathname);toast(T("left"));break;
 case"hi":S.pn=m.n;sys(m.n+" "+T("joined"));if(S.host)setTimeout(()=>send({t:"st",p:!v.paused,c:v.currentTime,r:v.playbackRate}),900);break;
 case"bye":break;
 case"members":S.members=Math.max(1,m.n||1);break;
@@ -302,7 +324,10 @@ const mm=t.match(/https?:\/\/[^"'\s<>\\)]+?\.(m3u8|mpd|mp4|webm|mkv)[^"'\s<>\\)]
 const og=t.match(/property=["']og:video(?::url)?["'][^>]*content=["']([^"']+)/i);
 if(mm)return mm[0];if(og)return og[1]}catch(e){}}
 return u}
-async function load(u,fromRemote){u=u.trim();if(!u)return;const real=await resolve(u);S.src=u;
+async function hlsify(u){try{const r=await fetch("/api/hls?u="+encodeURIComponent(u));const j=await r.json();return j.url||null}catch(e){return null}}
+async function load(u,fromRemote){u=u.trim();if(!u)return;let real=await resolve(u);S.src=u;
+if(/\.(mkv|avi|ts|wmv|flv|ogv|mov)(\?|#|$)/i.test(real)&&!v.canPlayType("video/x-matroska")){
+toast(T("res"));const hu=await hlsify(real);if(hu)real=hu}
 clean();$("#ph").style.display="none";
 if(/\.m3u8/i.test(real)&&window.Hls&&Hls.isSupported()){S.hls=new Hls({maxBufferLength:15,maxMaxBufferLength:20,maxBufferSize:3e8,maxBufferHole:.5,startLevel:0,abrEwmaDefaultEstimate:3e5,abrBandWidthFactor:.7,abrBandWidthUpFactor:.5,fragLoadPolicy:{default:{maxTimeToFirstByteMs:20000,maxLoadTimeMs:120000,timeoutRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000},errorRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000}}}});S.hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal){if(d.type=="networkError")S.hls.startLoad();else if(d.type=="mediaError")S.hls.recoverMediaError()}});S.hls.loadSource(real);S.hls.attachMedia(v)}
 else if(/\.mpd/i.test(real)&&window.dashjs){S.dash=dashjs.MediaPlayer().create();S.dash.updateSettings({streaming:{buffer:{bufferTimeDefault:20,bufferTimeAtTopQuality:20,bufferTimeAtTopQualityLongForm:20},abr:{initialBitrate:{video:300}},retryAttempts:{MediaSegment:8,MPD:5},retryIntervals:{MediaSegment:1500}}});S.dash.initialize(v,real,false)}
@@ -471,13 +496,15 @@ $("#fsm").addEventListener("blur",()=>{clearTimeout(FST);FST=setTimeout(()=>$("#
 $("#rx").onclick=()=>{S.reply=null;$("#rep").classList.remove("on")};
 $("#mk").onclick=hostRoom;$("#jn").onclick=()=>joinRoom($("#jc").value);
 $("#del").onclick=()=>{if(confirm(T("delconfirm")))send({t:"delete",secret:roomSecret()})};
+$("#leave").onclick=()=>send({t:"leave"});
+$("#tg").onclick=()=>window.open("https://t.me/amirh00sain","_blank","noopener");
 $("#jc").onkeydown=e=>{if(e.key=="Enter")joinRoom(e.target.value)};
 async function copyText(t){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t);return true}}catch(e){}
 const a=document.createElement("textarea");a.value=t;a.setAttribute("readonly","");a.style.cssText="position:fixed;top:0;left:-9999px;opacity:0";document.body.appendChild(a);a.focus();a.select();a.setSelectionRange(0,a.value.length);let ok=false;try{ok=document.execCommand("copy")}catch(e){}a.remove();return ok}
 $("#cp").onclick=async()=>{const ok=await copyText(S.code);toast(ok?T("copied"):S.code)};
 $("#jc").onclick=e=>{if(e.target.value)e.target.select()};
 const q=new URLSearchParams(location.search).get("room")||location.hash.slice(1)||localStorage.room||"";
-if(q){$("#jc").value=q.toUpperCase();if(localStorage.n){$("#nm").value=localStorage.n;AJT=setTimeout(()=>joinRoom(q),250)}}
+if(q){$("#jc").value=q.toUpperCase();if(localStorage.n){$("#nm").value=localStorage.n;AJT=setTimeout(()=>joinRoom(q,0,true),250)}}
 fsState();
 </script>
 </body>

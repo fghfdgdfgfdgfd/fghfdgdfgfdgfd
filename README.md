@@ -33,3 +33,7 @@ node server.js
 - `GET /api/rooms/:code/chats`
 
 Rooms unused for 5 hours are deleted automatically. The room creator can delete a room at any time using the trash icon in the top bar.
+
+## Video formats
+
+Browsers cannot play Matroska (`.mkv`) directly. The server includes ffmpeg and exposes `/api/hls?u=<video-url>`, which remuxes the file to HLS on the fly (video/audio copied, subtitles converted to WebVTT). The client uses this automatically when the browser cannot play MKV, so links play in Chrome and Firefox too. Remuxed files are cached in `data/hls/`.

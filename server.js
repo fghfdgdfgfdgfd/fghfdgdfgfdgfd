@@ -1,6 +1,8 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 
@@ -10,7 +12,29 @@ const CHATS = path.join(DATA, "chats");
 const ROOMS_FILE = path.join(DATA, "rooms.json");
 const PORT = Number(process.env.PORT) || 3000;
 
+const HLS_ROOT = path.join(DATA, "hls");
 fs.mkdirSync(CHATS, { recursive: true });
+fs.mkdirSync(HLS_ROOT, { recursive: true });
+const hlsJobs = new Map();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function startHls(mediaUrl) {
+  const id = crypto.createHash("md5").update(mediaUrl).digest("hex").slice(0, 16);
+  const dir = path.join(HLS_ROOT, id);
+  fs.mkdirSync(dir, { recursive: true });
+  const playlist = path.join(dir, "index.m3u8");
+  if (!fs.existsSync(playlist) && !hlsJobs.has(id)) {
+    const job = spawn("ffmpeg", [
+      "-hide_banner", "-loglevel", "error", "-i", mediaUrl,
+      "-c:v", "copy", "-c:a", "copy", "-c:s", "webvtt", "-f", "hls", "-hls_time", "10", "-hls_list_size", "0",
+      "-hls_segment_filename", path.join(dir, "seg%d.ts"), playlist,
+    ], { stdio: "ignore" });
+    hlsJobs.set(id, job);
+    job.on("exit", () => hlsJobs.delete(id));
+    setTimeout(() => { if (hlsJobs.has(id)) { job.kill(); hlsJobs.delete(id); } }, 30 * 60 * 1000).unref();
+  }
+  return { id, playlist };
+}
 
 const readJson = (f, fallback) => {
   try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return fallback; }
@@ -70,7 +94,7 @@ const broadcast = (room, obj, except) => {
 const memberCount = (room) => [...clients.values()].filter((m) => m.room === room).length;
 const announceMembers = (room) => broadcast(room, { t: "members", n: memberCount(room) });
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   const cors = {
     "Access-Control-Allow-Origin": "*",
@@ -95,13 +119,30 @@ const server = http.createServer((req, res) => {
     return res.end(JSON.stringify({ ...rooms[code], members: [...clients.values()].filter((m) => m.room === code).length }));
   }
 
+  if (url.pathname === "/api/hls") {
+    const u = url.searchParams.get("u") || "";
+    if (!/^https?:\/\//i.test(u)) { res.writeHead(400, cors); return res.end(JSON.stringify({ error: "bad url" })); }
+    try {
+      const { id, playlist } = startHls(u);
+      const deadline = Date.now() + 20000;
+      while (!fs.existsSync(playlist) && Date.now() < deadline) await sleep(300);
+      if (!fs.existsSync(playlist)) { res.writeHead(202, cors); return res.end(JSON.stringify({ pending: true })); }
+      res.writeHead(200, cors);
+      return res.end(JSON.stringify({ url: `/hls/${id}/index.m3u8` }));
+    } catch (e) {
+      res.writeHead(500, cors);
+      return res.end(JSON.stringify({ error: String(e) }));
+    }
+  }
+
   let file = url.pathname === "/" ? "/index.html" : url.pathname;
+  if (file.startsWith("/hls/")) file = "/data" + file;
   const target = path.join(ROOT, path.normalize(file).replace(/^(\.\.[/\\])+/, ""));
   fs.readFile(target, (err, buf) => {
     if (err) { res.writeHead(404); return res.end("Not found"); }
     const ext = path.extname(target);
-    const type = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".json": "application/json", ".css": "text/css" }[ext] || "application/octet-stream";
-    res.writeHead(200, { "Content-Type": type });
+    const type = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".json": "application/json", ".css": "text/css", ".m3u8": "application/vnd.apple.mpegurl", ".ts": "video/mp2t" }[ext] || "application/octet-stream";
+    res.writeHead(200, { "Content-Type": type, "Access-Control-Allow-Origin": "*" });
     res.end(buf);
   });
 });
@@ -148,6 +189,15 @@ wss.on("connection", (ws) => {
       const secret = String(m.secret || me.secret || "");
       if (!secret || !rooms[me.room] || rooms[me.room].secret !== secret) { send(ws, { t: "err", msg: "Only host can delete" }); return; }
       deleteRoom(me.room);
+      return;
+    }
+
+    if (m.t === "leave") {
+      const code = me.room;
+      me.room = null; me.secret = ""; me.host = false;
+      send(ws, { t: "left" });
+      broadcast(code, { t: "bye", id: me.id });
+      announceMembers(code);
       return;
     }
 
