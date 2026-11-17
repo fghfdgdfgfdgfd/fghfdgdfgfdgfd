@@ -126,6 +126,7 @@ video::cue{font-size:1.1em}
 #stage.pfs,#stage:fullscreen,#stage:-webkit-full-screen{width:100%;max-height:none;aspect-ratio:auto;margin:0}
 .adv.open{max-height:min(38vh,520px)}
 }
+#tap{position:absolute;inset:0;margin:auto;width:76px;height:76px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:32px;z-index:8;display:none;cursor:pointer}#tap.on{display:block}
 </style>
 </head>
 <body>
@@ -163,7 +164,7 @@ video::cue{font-size:1.1em}
   <div id="stage">
     <video id="v" playsinline webkit-playsinline preload="auto"></video>
     <div id="ph" data-i="ph"></div>
-    <div id="dl"><i></i></div><div id="bf"></div><div id="subov"></div><div id="bub"></div>
+    <button id="tap" aria-label="Play">▶</button><div id="dl"><i></i></div><div id="bf"></div><div id="subov"></div><div id="bub"></div>
     <div id="fsin"><input type="text" id="fsm" data-p="msg" autocomplete="off"><button id="fsd" data-i="send" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M3 20.5l18-8.5L3 3.5l3.2 7.2L15 12 6.2 13.3 3 20.5z"/></svg></button></div>
     <div id="ctl">
       <button id="pp">▶</button><span class="t" id="tc">0:00</span>
@@ -229,13 +230,22 @@ history.replaceState(null,"",location.pathname+"?room="+encodeURIComponent(code)
 const WSURL=(location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws";
 function online(){return !!(S.ws&&S.ws.readyState===1)}
 const send=o=>{if(online())try{S.ws.send(JSON.stringify(o))}catch(e){}};
+const CID=localStorage.cid||(localStorage.cid=Math.random().toString(36).slice(2,9));
+const snow=()=>Date.now()+(S.clk||0);
+const expPos=()=>{const r=S.ref;return r?(r.p?r.c+(snow()-r.at)/1000*r.r:r.c):null};
+function startPing(){clearInterval(S.pi);const p=()=>send({t:"cp",c:performance.now()});p();setTimeout(p,300);setTimeout(p,700);S.pi=setInterval(p,5000)}
+function scheduleReconnect(now){if(!S.code)return;clearTimeout(S.rt2);
+S.rt2=setTimeout(async()=>{if(online())return;const ws=await connectWS();if(ws)send({t:"join",room:S.code,n:name(),secret:roomSecret(),cid:CID})},now?0:Math.min(8000,500*2**(S.bo=Math.min(5,(S.bo||0)+1))))}
+const kick=()=>{if(S.code&&!online()){S.bo=0;scheduleReconnect(true)}};
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)kick()});addEventListener("online",kick);
 function connectWS(){return new Promise(res=>{
  if(online())return res(S.ws);
+ if(S.ws&&S.ws.readyState===0){S.ws.addEventListener("open",()=>res(S.ws),{once:true});S.ws.addEventListener("close",()=>res(null),{once:true});return}
  let ws;try{ws=new WebSocket(WSURL)}catch(e){return res(null)}
- S.ws=ws;ws.onopen=()=>res(ws);
- ws.onerror=()=>{toast("connection error");res(null)};
- ws.onclose=()=>{$("#dot").classList.remove("on");i18n()};
- ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}rx(m)};
+ S.ws=ws;ws.onopen=()=>{S.bo=0;startPing();res(ws)};
+ ws.onerror=()=>{};
+ ws.onclose=()=>{if(S.ws!==ws)return;clearInterval(S.pi);$("#dot").classList.remove("on");i18n();res(null);scheduleReconnect()};
+ ws.onmessage=e=>{if(S.ws!==ws)return;let m;try{m=JSON.parse(e.data)}catch{return}rx(m)};
 })}
 const roomSecret=()=>{if(!localStorage.rt)localStorage.rt=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);return localStorage.rt};
 function askName(){return new Promise(res=>{const m=$("#namemod"),inp=$("#namein");
@@ -244,27 +254,29 @@ const done=ok=>{m.classList.remove("on");inp.onkeydown=null;$("#nameok").onclick
 const v=inp.value.trim().slice(0,20);if(ok&&v){$("#nm").value=v;localStorage.n=v;res(v)}else res(null)};
 $("#nameok").onclick=()=>done(true);
 inp.onkeydown=e=>{if(e.key=="Enter")done(true);if(e.key=="Escape")done(false)}});}
-async function hostRoom(){clearTimeout(AJT);if(!await askName())return;S.host=true;toast(T("joining"));const ws=await connectWS();if(!ws)return;send({t:"create",n:name(),secret:roomSecret()})}
+async function hostRoom(){clearTimeout(AJT);if(!await askName())return;S.host=true;toast(T("joining"));const ws=await connectWS();if(!ws)return;send({t:"create",n:name(),secret:roomSecret(),cid:CID})}
 async function joinRoom(code,attempt,auto){clearTimeout(AJT);
 if((!auto||!localStorage.n)&&!attempt){if(!await askName())return}
 code=(code||"").trim().replace(/^wp-/i,"").toUpperCase();
 if(code.length<4){toast(T("err"));return}attempt=attempt||0;
-if(S.ws)try{S.ws.close()}catch(e){}
+{const o=S.ws;S.ws=null;if(o)try{o.close()}catch(e){}}
 S.host=false;toast(T("joining"));const ws=await connectWS();if(!ws)return;
-send({t:"join",room:code,n:name(),secret:roomSecret()});
+send({t:"join",room:code,n:name(),secret:roomSecret(),cid:CID});
 setTimeout(()=>{if(!S.code&&attempt<2)joinRoom(code,attempt+1,auto);else if(!S.code)toast(T("err"))},6000)}
 const toB64=buf=>{const u=new Uint8Array(buf);let s="";for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
 const fromB64=str=>{const b=atob(str),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
 function rx(m){switch(m.t){
-case"joined":enter(m.code);S.host=!!m.host;S.members=Math.max(1,m.members||1);roomBtns();$("#dot").classList.add("on");i18n();
-(m.history||[]).forEach(msg=>addMsg(msg,false,true));
-if(S.host&&S.src)send({t:"src",u:S.src});
+case"joined":{$("#chat").innerHTML="";for(const k in M)delete M[k];for(const k in RX)delete RX[k];
+if(S.rcode!==m.code){S.rcode=m.code;S.ref=null;S.reply=null;$("#rep").classList.remove("on");$("#bub").innerHTML="";if(v.currentSrc||S.hls||S.dash){clean();$("#ph").style.display=""}S.src=null}
+enter(m.code);S.host=!!m.host;S.members=Math.max(1,m.members||1);roomBtns();$("#dot").classList.add("on");i18n();
+(m.history||[]).forEach(x=>addMsg(x,x.u===CID,true));
+if(m.src&&m.src!==S.src)load(m.src,true).then(()=>send({t:"req"}));
 if(S.lf)offer(S.lf);
-setTimeout(()=>send({t:"req"}),900);break;
-case"err":toast(m.msg||T("err"));if(/not found/i.test(m.msg||"")){delete localStorage.room;S.code=null;document.body.classList.remove("in");history.replaceState(null,"",location.pathname)}break;
-case"deleted":delete localStorage.room;S.code=null;S.members=0;document.body.classList.remove("in");history.replaceState(null,"",location.pathname);toast(T("deleted"));break;
-case"left":delete localStorage.room;S.code=null;S.members=0;document.body.classList.remove("in");history.replaceState(null,"",location.pathname);toast(T("left"));break;
-case"hi":S.pn=m.n;sys(m.n+" "+T("joined"));if(S.host)setTimeout(()=>send({t:"st",p:!v.paused,c:v.currentTime,r:v.playbackRate}),900);break;
+setTimeout(()=>send({t:"req"}),900);break}
+case"err":toast(m.msg||T("err"));if(/not found/i.test(m.msg||"")){delete localStorage.room;S.code=null;S.rcode=null;S.ref=null;clean();$("#ph").style.display="";document.body.classList.remove("in");history.replaceState(null,"",location.pathname)}break;
+case"deleted":delete localStorage.room;S.code=null;S.rcode=null;S.ref=null;clean();$("#ph").style.display="";S.members=0;document.body.classList.remove("in");history.replaceState(null,"",location.pathname);toast(T("deleted"));break;
+case"left":delete localStorage.room;S.code=null;S.rcode=null;S.ref=null;clean();$("#ph").style.display="";S.members=0;document.body.classList.remove("in");history.replaceState(null,"",location.pathname);toast(T("left"));break;
+case"hi":S.pn=m.n;sys(m.n+" "+T("joined"));setTimeout(()=>{if(v.currentSrc||S.hls||S.dash)pushState(true)},800);break;
 case"bye":break;
 case"members":S.members=Math.max(1,m.n||1);break;
 case"src":load(m.u,true).then(()=>send({t:"req"}));break;
@@ -274,13 +286,12 @@ case"fno":toast(T("big"));break;
 case"fstop":if(S.sending===m.id)S.sending=null;break;
 case"fc":if(S.rf&&S.rf.id===m.id){if(typeof m.d==="string")m.d=fromB64(m.d);S.rf.p.push(m.d);S.rf.g+=(m.d.byteLength||m.d.size||0);const q=S.rf.g/S.rf.z;$("#dl").classList.add("on");$("#dl i").style.width=q*100+"%";bf(T("recv")+" "+(q*100|0)+"%")}break;
 case"fdone":if(S.rf&&S.rf.id===m.id)fin();break;
-case"pg":if(S.host)send({t:"po",ts:m.ts});break;
-case"po":{const l=(performance.now()-m.ts)/2000;S.lat=S.lat?S.lat*.6+l*.4:l;break}
+case"cp":{const rtt=performance.now()-m.c;(S.cs=S.cs||[]).push({r:rtt,o:m.s+rtt/2-Date.now()});if(S.cs.length>8)S.cs.shift();S.clk=S.cs.reduce((a,b)=>b.r<a.r?b:a).o;break}
 case"st":applyState(m);break;
 case"rdy":S.pr=m.r;break;
-case"req":if(S.host){if(S.want)send({t:"st",p:1,c:v.currentTime,r:v.playbackRate});else{send({t:"st",p:!v.paused,c:v.currentTime,r:v.playbackRate});send({t:"rdy",r:true})}}break;
-case"chat":if(spamCheck(m,false))addMsg(m,false);break;
-case"re":react(m.id,m.e,false);break;
+case"req":if(v.currentSrc||S.hls||S.dash){if(S.want)send({t:"st",p:1,c:v.currentTime,r:S.rate||1,at:snow()});else pushState(true)}break;
+case"chat":if(spamCheck(m,false))addMsg(m,m.u===CID);break;
+case"re":setRx(m.id,m.e,m.u,m.on);break;
 case"sub":break}}
 /* ---------- buffer gate ---------- */
 const ahead=()=>{const t=v.currentTime,b=v.buffered;for(let i=0;i<b.length;i++)if(t>=b.start(i)-.4&&t<=b.end(i))return b.end(i)-t;return 0};
@@ -299,22 +310,36 @@ const r=ok&&(a>=n||a>=rem-.5||(stalled&&a>=Math.min(n,10))||(v.readyState>=4&&re
 const op=S.members>1;
 bf(T("bufing")+" "+(a|0)+"s / "+(n|0)+"s"+(r&&op&&!S.pr?" · "+T("pw"):""));
 send({t:"rdy",r});
-if(r&&(S.pr||!op)){S.want=false;S.go=true;S.app=true;bf("");v.play().catch(()=>toast("▶"));setTimeout(()=>{S.go=false;S.app=false},600)}},400)}
-v.addEventListener("play",()=>{ui();if(S.go)return;S.app=true;v.pause();setTimeout(()=>S.app=false,150);
-if(!S.want){send({t:"st",p:1,c:v.currentTime,r:v.playbackRate});gate()}});
-v.addEventListener("waiting",()=>{if(!v.paused&&!S.want&&!S.go&&v.readyState<3){v.pause();setTimeout(()=>{send({t:"st",p:1,c:v.currentTime,r:v.playbackRate});gate()},80)}});
+if(r&&(S.pr||!op)){S.want=false;bf("");doPlay()}},400)}
+function doPlay(){S.go=true;S.app=true;S.ref={c:v.currentTime,at:snow(),p:1,r:S.rate||1};
+const p=v.play();setTimeout(()=>{S.go=false;S.app=false},600);
+if(p&&p.catch)p.catch(e=>{if(e&&e.name==="AbortError")return;S.go=false;S.app=false;$("#tap").classList.add("on")})}
+function unlock(){try{if(v.paused&&(v.currentSrc||S.hls)){S.app=true;const p=v.play();if(p&&p.catch)p.catch(()=>{});v.pause();setTimeout(()=>S.app=false,400)}}catch(e){}}
+function requestPlay(){unlock();S.lead=1;send({t:"st",p:1,c:v.currentTime,r:S.rate||1,at:snow()});gate()}
+$("#tap").onclick=e=>{e.stopPropagation();$("#tap").classList.remove("on");const x=expPos();
+if(S.ref&&S.ref.p&&x!=null){if(Math.abs(v.currentTime-x)>.5)v.currentTime=Math.max(0,x);doPlay()}else requestPlay()};
+v.addEventListener("play",ui);
+v.addEventListener("waiting",()=>{if(!v.paused&&!S.want&&!S.go&&v.readyState<3){S.app=true;v.pause();setTimeout(()=>S.app=false,400);S.lead=1;
+send({t:"st",p:1,c:v.currentTime,r:S.rate||1,at:snow(),g:1});gate()}});
 v.addEventListener("progress",()=>{if(!S.want&&!S.sending&&!S.rf&&!$("#dl").classList.contains("on"))bf(v.src?"⬇ "+(ahead()|0)+"s":"")});
 /* ---------- playback sync ---------- */
-function pushState(){send({t:"st",p:!v.paused,c:v.currentTime,r:v.playbackRate})}
-function applyState(m){S.app=true;
-const want=m.c+(m.p?(S.lat||0):0);if(Math.abs(v.currentTime-want)>0.5)v.currentTime=Math.max(0,want);
-if(v.playbackRate!=m.r){v.playbackRate=m.r;setSpeed(m.r)}
-if(m.p&&v.paused)gate();if(!m.p){S.want=false;if(!v.paused)v.pause()}
-setTimeout(()=>S.app=false,500)}
-const sync=()=>{if(!S.app&&online())pushState()};
-["pause","seeked","ratechange"].forEach(e=>v.addEventListener(e,()=>{sync();ui()}));
-setInterval(()=>{if(!v.paused&&S.host&&!S.want)pushState()},2500);
-setInterval(()=>{if(!S.host)send({t:"pg",ts:performance.now()})},3000);
+function pushState(hb){const p=(!v.paused||S.want)?1:0;S.ref={c:v.currentTime,at:snow(),p,r:S.rate||1};
+send({t:"st",p,c:S.ref.c,r:S.ref.r,at:S.ref.at,hb:hb&&!v.paused&&!S.want?1:0})}
+function applyState(m){S.lead=0;S.ref={c:m.c,at:m.at||snow(),p:!!m.p,r:m.r||1};
+S.app=true;setTimeout(()=>S.app=false,500);
+if(m.r&&S.rate!=m.r)setSpeed(m.r);
+const e=expPos(),far=(a,b)=>Math.abs(a-b)>.6;
+if(m.p){if(v.paused||m.g){if(!v.paused)v.pause();if(far(v.currentTime,m.c))v.currentTime=Math.max(0,m.c);gate()}
+else if(far(v.currentTime,e))v.currentTime=Math.max(0,e);
+if(m.hb)S.pr=true}
+else{S.want=false;bf("");if(!v.paused)v.pause();if(Math.abs(v.currentTime-m.c)>.3)v.currentTime=Math.max(0,m.c)}}
+const sync=()=>{if(!S.app&&online()){S.lead=1;pushState()}};
+["pause","seeked","ratechange"].forEach(e=>v.addEventListener(e,()=>{if(!(e=="ratechange"&&S.nud))sync();ui()}));
+setInterval(()=>{if(S.lead&&!v.paused&&!S.want&&online())pushState(true)},2000);
+setInterval(()=>{if(v.paused||S.want||S.go||!S.ref||!S.ref.p)return;const x=expPos(),d=v.currentTime-x,a=Math.abs(d),r=S.rate||1;
+if(a>.6){S.app=true;v.currentTime=Math.max(0,x);setTimeout(()=>S.app=false,500)}
+else if(a>.1){S.nud=1;v.playbackRate=r*(d>0?.94:1.06);setTimeout(()=>S.nud=0,120)}
+else if(v.playbackRate!==r){S.nud=1;v.playbackRate=r;setTimeout(()=>S.nud=0,120)}},1000);
 /* ---------- loading sources ---------- */
 const MEDIA=/\.(mp4|m4v|webm|mkv|mov|ogv|ogg|mp3|m4a|m3u8|mpd|ts)(\?|#|$)/i;
 async function resolve(u){if(MEDIA.test(u))return u;toast(T("res"));
@@ -324,17 +349,18 @@ const mm=t.match(/https?:\/\/[^"'\s<>\\)]+?\.(m3u8|mpd|mp4|webm|mkv)[^"'\s<>\\)]
 const og=t.match(/property=["']og:video(?::url)?["'][^>]*content=["']([^"']+)/i);
 if(mm)return mm[0];if(og)return og[1]}catch(e){}}
 return u}
-async function hlsify(u){try{const r=await fetch("/api/hls?u="+encodeURIComponent(u));const j=await r.json();return j.url||null}catch(e){return null}}
-async function load(u,fromRemote){u=u.trim();if(!u)return;let real=await resolve(u);S.src=u;
-if(/\.(mkv|avi|ts|wmv|flv|ogv|mov)(\?|#|$)/i.test(real)&&!v.canPlayType("video/x-matroska")){
-toast(T("res"));const hu=await hlsify(real);if(hu)real=hu}
+async function hlsify(u){try{const r=await fetch("/api/hls?u="+encodeURIComponent(u));const j=await r.json();return j.url?j:null}catch(e){return null}}
+async function load(u,fromRemote){u=u.trim();if(!u)return;let real=await resolve(u),HS=null;S.src=u;
+if(/\.(mkv|avi|ts|wmv|flv)(\?|#|$)/i.test(real)){
+toast(T("res"));const hj=await hlsify(real);if(hj){real=hj.url;HS=hj.sub}}
 clean();$("#ph").style.display="none";
-if(/\.m3u8/i.test(real)&&window.Hls&&Hls.isSupported()){S.hls=new Hls({maxBufferLength:15,maxMaxBufferLength:20,maxBufferSize:3e8,maxBufferHole:.5,startLevel:0,abrEwmaDefaultEstimate:3e5,abrBandWidthFactor:.7,abrBandWidthUpFactor:.5,fragLoadPolicy:{default:{maxTimeToFirstByteMs:20000,maxLoadTimeMs:120000,timeoutRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000},errorRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000}}}});S.hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal){if(d.type=="networkError")S.hls.startLoad();else if(d.type=="mediaError")S.hls.recoverMediaError()}});S.hls.loadSource(real);S.hls.attachMedia(v)}
+if(/\.m3u8/i.test(real)&&window.Hls&&Hls.isSupported()){S.hls=new Hls({maxBufferLength:15,maxMaxBufferLength:20,maxBufferSize:3e8,maxBufferHole:.5,startPosition:/^\/hls\//.test(real)?0:-1,startLevel:0,abrEwmaDefaultEstimate:3e5,abrBandWidthFactor:.7,abrBandWidthUpFactor:.5,fragLoadPolicy:{default:{maxTimeToFirstByteMs:20000,maxLoadTimeMs:120000,timeoutRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000},errorRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000}}}});S.hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal){if(d.type=="networkError")S.hls.startLoad();else if(d.type=="mediaError")S.hls.recoverMediaError()}});S.hls.loadSource(real);S.hls.attachMedia(v)}
 else if(/\.mpd/i.test(real)&&window.dashjs){S.dash=dashjs.MediaPlayer().create();S.dash.updateSettings({streaming:{buffer:{bufferTimeDefault:20,bufferTimeAtTopQuality:20,bufferTimeAtTopQualityLongForm:20},abr:{initialBitrate:{video:300}},retryAttempts:{MediaSegment:8,MPD:5},retryIntervals:{MediaSegment:1500}}});S.dash.initialize(v,real,false)}
 else if($("#cs").checked){try{$("#dl").classList.add("on");const b=await pdl(real);if(S.src!==u)return;S.blob=b;v.src=b}catch(e){if(e&&e.name=="AbortError")return;toast(T("nocache"));v.src=real}$("#dl").classList.remove("on")}
 else v.src=real;
-if(!fromRemote){send({t:"src",u});setTimeout(()=>{const pr=v.play();if(pr&&pr.catch)pr.catch(()=>gate())},60)}
-if(!/\.(srt|vtt)$/i.test(real)){
+if(!fromRemote){send({t:"src",u});setTimeout(requestPlay,60)}
+if(HS){(async()=>{for(let i=0;i<40&&S.src===u;i++){const r=await fetch(HS).catch(()=>null);if(r&&r.ok){const t=await r.text();if(/\d+:\d+:\d+/.test(t)){addSub(t);return}}await sleep(4000)}})()}
+else if(!/\.(srt|vtt)$/i.test(real)){
 if(/\.(mkv|webm|avi|ts)(\?|#|$)/i.test(real))embeddedSub(real).then(ok=>{if(!ok)autoSub(real)});
 else autoSub(real);}}
 async function pdl(u){const ct=S.ab=new AbortController(),sg=ct.signal;
@@ -423,9 +449,9 @@ if(!seeking)$("#seek").value=v.duration?v.currentTime/v.duration*1000:0;renderSu
 let seeking=false;const sk=$("#seek");
 sk.oninput=()=>{seeking=true;$("#tc").textContent=fmt(sk.value/1000*(v.duration||0))};
 sk.onchange=()=>{v.currentTime=sk.value/1000*(v.duration||0);seeking=false};
-$("#pp").onclick=()=>{if(S.want){S.want=false;send({t:"st",p:0,c:v.currentTime,r:v.playbackRate});return}v.paused?v.play():v.pause()};
+$("#pp").onclick=()=>{if(S.want){S.want=false;bf("");S.lead=1;S.app=true;setTimeout(()=>S.app=false,300);if(!v.paused)v.pause();pushState();return}if(v.paused)requestPlay();else v.pause()};
 stage.addEventListener("click",e=>{if(e.target==v)$("#pp").click();wake()});
-function setSpeed(r){v.playbackRate=r;$("#spd").textContent=r+"×";$$("#spdm button").forEach(b=>b.classList.toggle("on",+b.dataset.v===r))}
+function setSpeed(r){S.rate=r;v.playbackRate=r;$("#spd").textContent=r+"×";$$("#spdm button").forEach(b=>b.classList.toggle("on",+b.dataset.v===r))}
 $("#spd").onclick=e=>{e.stopPropagation();$("#spdw").classList.toggle("open")};
 $("#spdm").onclick=e=>{const b=e.target.closest("button");if(!b)return;setSpeed(+b.dataset.v);$("#spdw").classList.remove("open")};
 document.addEventListener("click",e=>{if(!e.target.closest("#spdw"))$("#spdw").classList.remove("open")});
@@ -460,7 +486,7 @@ function sys(t){const d=document.createElement("div");d.className="sys";d.textCo
 const scr=()=>{const c=$("#chat");if(c.scrollHeight>c.clientHeight+2)c.scrollTo({top:c.scrollHeight,behavior:"smooth"});
 const near=(innerHeight+scrollY)>=(document.documentElement.scrollHeight-140);if(near)window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"})};
 function startReply(m){S.reply=m;$("#rt").textContent="↩ "+m.x.slice(0,50);$("#rep").classList.add("on");$("#msg").focus();$$(".act.open").forEach(x=>x.classList.remove("open"))}
-function addMsg(m,mine,hist){M[m.id]=m;const d=document.createElement("div");d.className="m"+(mine?" me":"");d.id="m"+m.id;
+function addMsg(m,mine,hist){if(M[m.id])return;M[m.id]=m;if(m.r)for(const e in m.r)(RX[m.id]=RX[m.id]||{})[e]=new Set(m.r[e]);const d=document.createElement("div");d.className="m"+(mine?" me":"");d.id="m"+m.id;
 let h="";if(!mine)h+=`<div class="n"></div>`;if(m.q)h+=`<div class="q"></div>`;
 h+=`<div class="b"></div><div class="rs"></div><div class="act"></div>`;d.innerHTML=h;
 if(!mine){d.querySelector(".n").textContent=m.n;d.style.setProperty("--mc",m.c||colorOf(m.n))}if(m.q)d.querySelector(".q").textContent=m.q;
@@ -472,13 +498,13 @@ d.addEventListener("touchstart",e=>{const t=e.touches[0];sx=t.clientX;sy=t.clien
 d.addEventListener("touchend",e=>{const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;
 if(dx<-45&&Math.abs(dx)>Math.abs(dy)*1.4){startReply(m);navigator.vibrate&&navigator.vibrate(15)}},{passive:true});
 a.onclick=e=>{const b=e.target.closest("button");if(!b)return;
-if(b.dataset.r!==undefined){startReply(m)}else react(m.id,b.dataset.e,true);a.classList.remove("open")};
-$("#chat").append(d);scr();showFsInput();
+if(b.dataset.r!==undefined){startReply(m)}else toggleRx(m.id,b.dataset.e);a.classList.remove("open")};
+$("#chat").append(d);renderRx(m.id);scr();showFsInput();
 if(!mine&&!hist){bubble(m.n,m.x)}}
-function react(id,e,mine){const r=RX[id]=RX[id]||{};const k=r[e]=r[e]||{me:0,o:0};
-if(mine){k.me=k.me?0:1;send({t:"re",id,e})}else k.o=k.o?0:1;
-const box=$("#m"+id+" .rs");if(!box)return;box.innerHTML="";
-for(const x in r){const n=r[x].me+r[x].o;if(n){const s=document.createElement("span");s.className=r[x].me?"me":"";s.textContent=x+(n>1?" "+n:"");box.append(s)}}}
+function renderRx(id){const r=RX[id],box=$("#m"+id+" .rs");if(!r||!box)return;box.innerHTML="";
+for(const x in r){const n=r[x].size;if(n){const s=document.createElement("span");s.className=r[x].has(CID)?"me":"";s.textContent=x+(n>1?" "+n:"");box.append(s)}}}
+function setRx(id,e,u,on){const r=RX[id]=RX[id]||{},s=r[e]=r[e]||new Set();on?s.add(u):s.delete(u);renderRx(id)}
+function toggleRx(id,e){const s=((RX[id]=RX[id]||{})[e]=(RX[id]||{})[e]||new Set());setRx(id,e,CID,!s.has(CID));send({t:"re",id,e})}
 function bubble(n,x,mine){if(!$("#bs").checked)return;const b=document.createElement("div");b.className="bb"+(mine?" me":"");b.innerHTML="<i></i><span></span>";
 b.firstChild.textContent=n;b.lastChild.textContent=x;$("#bub").append(b);
 setTimeout(()=>b.classList.add("out"),6000);setTimeout(()=>b.remove(),6900)}
