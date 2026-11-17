@@ -144,7 +144,8 @@ video::cue{font-size:1.1em}
     <div class="row"><div class="chip"><span class="dot" id="dot"></span><span id="st"></span></div>
     <button class="btn" id="cp" style="padding:4px 10px;font-family:ui-monospace,monospace;direction:ltr"></button>
     <button class="ic" data-act="theme" data-i="theme" aria-label="Theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg></button>
-    <button class="ic" data-act="lang" data-i="lang" aria-label="Language"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg></button></div>
+    <button class="ic" data-act="lang" data-i="lang" aria-label="Language"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg></button>
+    <button class="ic" id="del" data-i="delroom" title="حذف روم" aria-label="Delete room"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></div>
   </div>
 
   <div id="stage">
@@ -173,7 +174,6 @@ video::cue{font-size:1.1em}
       <div class="row"><input type="text" id="su" data-p="subu" dir="ltr" autocapitalize="off"><button class="btn" id="sg" data-i="load"></button></div>
       <label class="btn" style="text-align:center"><span data-i="subf"></span><input id="sf" type="file" accept=".srt,.vtt,.ass,.txt" hidden></label>
       <div class="row sp"><span data-i="bub"></span><label class="sw"><input type="checkbox" id="bs" checked><span></span></label></div>
-      <div class="row sp"><span data-i="bt"></span><select id="bt" class="btn"><option value="2">2s</option><option value="5" selected>5s</option><option value="10">10s</option></select></div>
       <div class="row sp"><span data-i="cs"></span><label class="sw"><input type="checkbox" id="cs"><span></span></label></div>
     </div></div>
   </div>
@@ -185,15 +185,14 @@ video::cue{font-size:1.1em}
   </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dashjs@4.7.4/dist/dash.all.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
 const D={
-fa:{tag:"تماشای دو نفره با چت",name:"نام شما",code:"کد روم",create:"ساخت روم جدید",or:"یا",join:"ورود به روم",theme:"تم",ph:"یک فایل یا لینک انتخاب کنید",load:"پخش",file:"فایل ویدیو",adv:"پیشرفته",sync:"همگام",sub:"زیرنویس",subf:"فایل زیرنویس (srt/vtt)",off:"تنظیم تفاوت زمان (من نسبت به او)",apply:"اعمال",bub:"حباب چت در تمام‌صفحه",auto:"همگام‌سازی خودکار",send:"ارسال",msg:"پیام...",url:"لینک ویدیو یا صفحه فیلم",subu:"لینک زیرنویس",lang:"English",wait:"منتظر ورود نفر دوم",con:"متصل",dis:"قطع شد",copied:"کد کپی شد",reply:"پاسخ",joined:"به روم پیوست",joining:"در حال ورود به روم...",err:"روم پیدا نشد",limit:"حداکثر ۵ پیام در ۳ ثانیه",spam:"اسپم تشخیص داده شد؛ ورودی پیام ۱ دقیقه قفل شد",locked:"قفل به مدت",res:"در حال پیدا کردن لینک ویدیو...",pick:"طرف مقابل فایل را پخش کرد؛ همان فایل را انتخاب کنید",bad:"این فرمت/کدک در مرورگر پشتیبانی نمی‌شود",full:"روم پر است",bt:"بافر قبل از پخش (نت ضعیف)",cs:"دانلود کامل با چند اتصال، بعد پخش",bufing:"در حال بافر",pw:"منتظر آماده شدن طرف مقابل",recv:"دریافت فایل",sndf:"ارسال فایل",big:"فایل خیلی بزرگ است؛ طرف مقابل باید همان فایل را انتخاب کند",nocache:"دانلود چندبخشی ممکن نیست؛ پخش مستقیم"},
-en:{tag:"Watch together with chat",name:"Your name",code:"Room code",create:"Create new room",or:"or",join:"Join room",theme:"Theme",ph:"Pick a file or paste a link",load:"Play",file:"Video file",adv:"Advanced",sync:"Sync",sub:"Subtitles",subf:"Subtitle file (srt/vtt)",off:"Time offset (me vs. them)",apply:"Apply",bub:"Chat bubbles in fullscreen",auto:"Auto sync",send:"Send",msg:"Message...",url:"Video or page link",subu:"Subtitle link",lang:"فارسی",wait:"Waiting for partner",con:"Connected",dis:"Disconnected",copied:"Code copied",reply:"Reply",joined:"joined the room",joining:"Joining room...",err:"Room not found",limit:"Max 5 messages per 3 seconds",spam:"Spam detected; message input locked for 1 minute",locked:"Locked for",res:"Finding the video link...",pick:"Partner started a file; pick the same file",bad:"Format/codec not supported by this browser",full:"Room is full",bt:"Pre-buffer before play (slow net)",cs:"Parallel full download, then play",bufing:"Buffering",pw:"waiting for partner",recv:"Receiving file",sndf:"Sending file",big:"File too large to send; partner must pick the same file",nocache:"Parallel download unavailable; streaming directly"}};
-let L=localStorage.l||"fa",S={conn:null,peers:[],spam:{},block:{},mt:[],host:false,app:false,reply:null,hls:null,dash:null};
+fa:{tag:"تماشای دو نفره با چت",name:"نام شما",code:"کد روم",create:"ساخت روم جدید",or:"یا",join:"ورود به روم",theme:"تم",ph:"یک فایل یا لینک انتخاب کنید",load:"پخش",file:"فایل ویدیو",adv:"پیشرفته",sync:"همگام",sub:"زیرنویس",subf:"فایل زیرنویس (srt/vtt)",off:"تنظیم تفاوت زمان (من نسبت به او)",apply:"اعمال",bub:"حباب چت در تمام‌صفحه",auto:"همگام‌سازی خودکار",send:"ارسال",msg:"پیام...",url:"لینک ویدیو یا صفحه فیلم",subu:"لینک زیرنویس",lang:"English",wait:"منتظر ورود نفر دوم",con:"متصل",dis:"قطع شد",copied:"کد کپی شد",reply:"پاسخ",joined:"به روم پیوست",joining:"در حال ورود به روم...",err:"روم پیدا نشد",limit:"حداکثر ۵ پیام در ۳ ثانیه",spam:"اسپم تشخیص داده شد؛ ورودی پیام ۱ دقیقه قفل شد",locked:"قفل به مدت",delroom:"حذف روم",delconfirm:"روم و تمام چت هایش حذف شود؟",deleted:"روم حذف شد",res:"در حال پیدا کردن لینک ویدیو...",pick:"طرف مقابل فایل را پخش کرد؛ همان فایل را انتخاب کنید",bad:"این فرمت/کدک در مرورگر پشتیبانی نمی‌شود",full:"روم پر است",bt:"بافر قبل از پخش (نت ضعیف)",cs:"دانلود کامل با چند اتصال، بعد پخش",bufing:"در حال بافر",pw:"منتظر آماده شدن طرف مقابل",recv:"دریافت فایل",sndf:"ارسال فایل",big:"فایل خیلی بزرگ است؛ طرف مقابل باید همان فایل را انتخاب کند",nocache:"دانلود چندبخشی ممکن نیست؛ پخش مستقیم"},
+en:{tag:"Watch together with chat",name:"Your name",code:"Room code",create:"Create new room",or:"or",join:"Join room",theme:"Theme",ph:"Pick a file or paste a link",load:"Play",file:"Video file",adv:"Advanced",sync:"Sync",sub:"Subtitles",subf:"Subtitle file (srt/vtt)",off:"Time offset (me vs. them)",apply:"Apply",bub:"Chat bubbles in fullscreen",auto:"Auto sync",send:"Send",msg:"Message...",url:"Video or page link",subu:"Subtitle link",lang:"فارسی",wait:"Waiting for partner",con:"Connected",dis:"Disconnected",copied:"Code copied",reply:"Reply",joined:"joined the room",joining:"Joining room...",err:"Room not found",limit:"Max 5 messages per 3 seconds",spam:"Spam detected; message input locked for 1 minute",locked:"Locked for",delroom:"Delete room",delconfirm:"Delete this room and all its chats?",deleted:"Room deleted",res:"Finding the video link...",pick:"Partner started a file; pick the same file",bad:"Format/codec not supported by this browser",full:"Room is full",bt:"Pre-buffer before play (slow net)",cs:"Parallel full download, then play",bufing:"Buffering",pw:"waiting for partner",recv:"Receiving file",sndf:"Sending file",big:"File too large to send; partner must pick the same file",nocache:"Parallel download unavailable; streaming directly"}};
+let L=localStorage.l||"fa",S={ws:null,spam:{},block:{},mt:[],host:false,app:false,reply:null,hls:null,dash:null};
 const T=k=>D[L][k]||k,v=$("#v"),stage=$("#stage");
 function i18n(){document.documentElement.lang=L;document.documentElement.dir=L=="fa"?"rtl":"ltr";
 $$("[data-i]").forEach(e=>{const t=T(e.dataset.i);if(e.querySelector("svg"))e.title=t;else e.textContent=t});$$("[data-p]").forEach(e=>e.placeholder=T(e.dataset.p));
@@ -209,40 +208,48 @@ setTheme(localStorage.th||(matchMedia("(prefers-color-scheme: light)").matches?"
 document.addEventListener("touchmove",e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
 $("#nm").value=localStorage.n||"";i18n();
 
-/* ---------- networking (WebRTC via PeerJS) ---------- */
-const rc=()=>Array.from({length:6},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.random()*32|0]).join("");
+/* ---------- networking (WebSocket relay + JSON on server) ---------- */
 const name=()=>($("#nm").value.trim()||"Guest").slice(0,20);
-function enter(code){S.code=code;localStorage.n=name();$("#cp").textContent=code;document.body.classList.add("in");i18n()}
-function hostRoom(){try{S.peer&&S.peer.destroy()}catch(e){}
-const code=rc();const p=new Peer("wp-"+code);S.peer=p;S.host=true;
-p.on("open",()=>{enter(code);toast("✓ "+code)});
-p.on("error",e=>{if(e.type=="unavailable-id"){toast("کد اتاق تغییر کرد");hostRoom()}else toast(e.type)});
-p.on("connection",c=>setup(c))}
-function joinRoom(code,attempt){code=(code||"").trim().replace(/^wp-/i,"").toUpperCase();
+function enter(code){S.code=code;localStorage.n=name();localStorage.room=code;
+$("#cp").textContent=code;document.body.classList.add("in");
+history.replaceState(null,"",location.pathname+"?room="+encodeURIComponent(code));i18n()}
+const WSURL=(location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws";
+function online(){return !!(S.ws&&S.ws.readyState===1)}
+const send=o=>{if(online())try{S.ws.send(JSON.stringify(o))}catch(e){}};
+function connectWS(){return new Promise(res=>{
+ if(online())return res(S.ws);
+ let ws;try{ws=new WebSocket(WSURL)}catch(e){return res(null)}
+ S.ws=ws;ws.onopen=()=>res(ws);
+ ws.onerror=()=>{toast("connection error");res(null)};
+ ws.onclose=()=>{$("#dot").classList.remove("on");i18n()};
+ ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}rx(m)};
+})}
+const roomSecret=()=>{if(!localStorage.rt)localStorage.rt=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);return localStorage.rt};
+async function hostRoom(){S.host=true;toast(T("joining"));const ws=await connectWS();if(!ws)return;send({t:"create",n:name(),secret:roomSecret()})}
+async function joinRoom(code,attempt){code=(code||"").trim().replace(/^wp-/i,"").toUpperCase();
 if(code.length<4){toast(T("err"));return}attempt=attempt||0;
-try{if(S.peer&&!S.host)S.peer.destroy()}catch(e){}
-const p=new Peer();S.peer=p;S.host=false;let settled=false;toast(T("joining"));
-p.on("open",()=>{const c=p.connect("wp-"+code,{reliable:true});setup(c,code);
-setTimeout(()=>{if(!settled&&!c.open){settled=true;toast(T("err"))}},12000)});
-p.on("error",e=>{if(settled)return;settled=true;
-if(e.type=="peer-unavailable"&&attempt<2){setTimeout(()=>joinRoom(code,attempt+1),700);return}
-toast(e.type=="peer-unavailable"?T("err"):e.type)})}
-function online(){return S.peers.some(c=>c&&c.open)}
-function setup(c,code){S.conn=c;if(!S.peers.includes(c))S.peers.push(c);
-c.on("open",()=>{if(code)enter(code);$("#dot").classList.add("on");i18n();
-send({t:"hi",n:name()});if(S.host&&S.src){send({t:"src",u:S.src});setTimeout(()=>send({t:"req"}),1200)}if(S.lf)offer(S.lf)});
-c.on("data",rx);c.on("close",()=>{const i=S.peers.indexOf(c);if(i>-1)S.peers.splice(i,1);
-if(!online()){$("#dot").classList.remove("on");$("#st").textContent=T("dis")}else i18n()})}
-const send=o=>{for(const c of S.peers){if(c&&c.open)try{c.send(o)}catch(e){}}};
+if(S.ws)try{S.ws.close()}catch(e){}
+S.host=false;toast(T("joining"));const ws=await connectWS();if(!ws)return;
+send({t:"join",room:code,n:name(),secret:roomSecret()});
+setTimeout(()=>{if(!S.code&&attempt<2)joinRoom(code,attempt+1);else if(!S.code)toast(T("err"))},6000)}
+const toB64=buf=>{const u=new Uint8Array(buf);let s="";for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+const fromB64=str=>{const b=atob(str),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
 function rx(m){switch(m.t){
-case"full":toast(T("full"));break;
+case"joined":enter(m.code);S.host=!!m.host;$("#dot").classList.add("on");i18n();
+(m.history||[]).forEach(msg=>addMsg(msg,false,true));
+if(S.host&&S.src)send({t:"src",u:S.src});
+if(S.lf)offer(S.lf);
+setTimeout(()=>send({t:"req"}),900);break;
+case"err":toast(m.msg||T("err"));if(/not found/i.test(m.msg||"")){delete localStorage.room;S.code=null;document.body.classList.remove("in");history.replaceState(null,"",location.pathname)}break;
+case"deleted":delete localStorage.room;S.code=null;document.body.classList.remove("in");history.replaceState(null,"",location.pathname);toast(T("deleted"));break;
 case"hi":S.pn=m.n;sys(m.n+" "+T("joined"));if(S.host)setTimeout(()=>send({t:"st",p:!v.paused,c:v.currentTime,r:v.playbackRate}),900);break;
+case"bye":break;
 case"src":load(m.u,true).then(()=>send({t:"req"}));break;
 case"fmeta":onMeta(m);break;
 case"fgo":if(m.id===S.fid)pump(m.id);break;
 case"fno":toast(T("big"));break;
 case"fstop":if(S.sending===m.id)S.sending=null;break;
-case"fc":if(S.rf&&S.rf.id===m.id){S.rf.p.push(m.d);S.rf.g+=(m.d.byteLength||m.d.size||0);const q=S.rf.g/S.rf.z;$("#dl").classList.add("on");$("#dl i").style.width=q*100+"%";bf(T("recv")+" "+(q*100|0)+"%")}break;
+case"fc":if(S.rf&&S.rf.id===m.id){if(typeof m.d==="string")m.d=fromB64(m.d);S.rf.p.push(m.d);S.rf.g+=(m.d.byteLength||m.d.size||0);const q=S.rf.g/S.rf.z;$("#dl").classList.add("on");$("#dl i").style.width=q*100+"%";bf(T("recv")+" "+(q*100|0)+"%")}break;
 case"fdone":if(S.rf&&S.rf.id===m.id)fin();break;
 case"pg":if(S.host)send({t:"po",ts:m.ts});break;
 case"po":{const l=(performance.now()-m.ts)/2000;S.lat=S.lat?S.lat*.6+l*.4:l;break}
@@ -254,14 +261,18 @@ case"re":react(m.id,m.e,false);break;
 case"sub":break}}
 /* ---------- buffer gate ---------- */
 const ahead=()=>{const t=v.currentTime,b=v.buffered;for(let i=0;i<b.length;i++)if(t>=b.start(i)-.4&&t<=b.end(i))return b.end(i)-t;return 0};
-const need=()=>Math.max(2,Math.min(20,+$("#bt").value,(v.duration||0)-v.currentTime-1));
+const need=()=>{const rem=(v.duration||0)-v.currentTime;
+let bw=0;try{if(S.hls&&S.hls.bandwidthEstimate)bw=S.hls.bandwidthEstimate;
+else if(S.dash){const q=S.dash.getQualityFor?S.dash.getQualityFor("video"):0;const l=S.dash.getBitrateInfoListFor?S.dash.getBitrateInfoListFor("video"):[];bw=(l[q]&&l[q].bitrate)||0}}catch(e){}
+const target=!bw?2.5:bw>5e6?6:bw>2e6?4:2.5;
+return Math.max(1.5,Math.min(target,rem-1,20))};
 function bf(t){const e=$("#bf");e.textContent=t;e.style.display=t?"block":"none"}
 function gate(){if(S.want)return;S.want=true;S.pr=false;S.la=0;S.lg=Date.now();S.gt=Date.now();clearInterval(S.gi);
 S.gi=setInterval(()=>{if(!S.want){clearInterval(S.gi);bf("");return}
 const a=ahead(),n=need(),rem=(v.duration||0)-v.currentTime,ok=v.duration>0;
 if(a>S.la+.5){S.la=a;S.lg=Date.now()}
 const stalled=Date.now()-S.lg>3500;
-const r=ok&&(a>=n||a>=rem-.5||(stalled&&a>=Math.min(n,10))||(v.readyState>=4&&rem<n+1)||(Date.now()-S.gt>8000&&a>=2));
+const r=ok&&(a>=n||a>=rem-.5||(stalled&&a>=Math.min(n,10))||(v.readyState>=4&&rem<n+1)||(Date.now()-S.gt>6000&&a>=1.5));
 const op=online();
 bf(T("bufing")+" "+(a|0)+"s / "+(n|0)+"s"+(r&&op&&!S.pr?" · "+T("pw"):""));
 send({t:"rdy",r});
@@ -327,10 +338,10 @@ if(m.z>1.2e9){send({t:"fno",id:m.id});toast(T("pick"));return}
 if(S.rf)send({t:"fstop",id:S.rf.id});
 S.rf={id:m.id,n:m.n,z:m.z,y:m.y,p:[],g:0};send({t:"fgo",id:m.id});bf(T("recv")+" 0%")}
 function fin(){const r=S.rf;S.rf=null;$("#dl").classList.remove("on");bf("");useFile(new File(r.p,r.n,{type:r.y||"video/mp4"}));toast("✓ "+r.n)}
-async function pump(id){const f=S.lf,cs=S.peers.filter(c=>c&&c.open);if(!f||!cs.length)return;const C=131072;S.sending=id;
-for(let o=0;o<f.size;o+=C){if(S.sending!==id||!cs.some(c=>c.open))return;
-while(cs.some(c=>c.dataChannel&&c.dataChannel.bufferedAmount>4e6)){await sleep(40);if(S.sending!==id||!cs.some(c=>c.open))return}
-const d=await f.slice(o,o+C).arrayBuffer();for(const c of cs){if(c.open)try{c.send({t:"fc",id,d})}catch(e){}}
+async function pump(id){const f=S.lf;if(!f||!online())return;const C=131072;S.sending=id;
+for(let o=0;o<f.size;o+=C){if(S.sending!==id||!online())return;
+while(S.ws.bufferedAmount>4e6){await sleep(40);if(S.sending!==id||!online())return}
+send({t:"fc",id,d:toB64(await f.slice(o,o+C).arrayBuffer())});
 if((o/C)%16==0)bf(T("sndf")+" "+(o/f.size*100|0)+"%")}
 send({t:"fdone",id});S.sending=null;bf("")}
 /* ---------- subtitles ---------- */
@@ -418,7 +429,7 @@ function sys(t){const d=document.createElement("div");d.className="sys";d.textCo
 const scr=()=>{const c=$("#chat");if(c.scrollHeight>c.clientHeight+2)c.scrollTo({top:c.scrollHeight,behavior:"smooth"});
 const near=(innerHeight+scrollY)>=(document.documentElement.scrollHeight-140);if(near)window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"})};
 function startReply(m){S.reply=m;$("#rt").textContent="↩ "+m.x.slice(0,50);$("#rep").classList.add("on");$("#msg").focus();$$(".act.open").forEach(x=>x.classList.remove("open"))}
-function addMsg(m,mine){M[m.id]=m;const d=document.createElement("div");d.className="m"+(mine?" me":"");d.id="m"+m.id;
+function addMsg(m,mine,hist){M[m.id]=m;const d=document.createElement("div");d.className="m"+(mine?" me":"");d.id="m"+m.id;
 let h="";if(!mine)h+=`<div class="n"></div>`;if(m.q)h+=`<div class="q"></div>`;
 h+=`<div class="b"></div><div class="rs"></div><div class="act"></div>`;d.innerHTML=h;
 if(!mine){d.querySelector(".n").textContent=m.n;d.style.setProperty("--mc",m.c||colorOf(m.n))}if(m.q)d.querySelector(".q").textContent=m.q;
@@ -432,7 +443,7 @@ if(dx<-45&&Math.abs(dx)>Math.abs(dy)*1.4){startReply(m);navigator.vibrate&&navig
 a.onclick=e=>{const b=e.target.closest("button");if(!b)return;
 if(b.dataset.r!==undefined){startReply(m)}else react(m.id,b.dataset.e,true);a.classList.remove("open")};
 $("#chat").append(d);scr();showFsInput();
-if(!mine){bubble(m.n,m.x)}}
+if(!mine&&!hist){bubble(m.n,m.x)}}
 function react(id,e,mine){const r=RX[id]=RX[id]||{};const k=r[e]=r[e]||{me:0,o:0};
 if(mine){k.me=k.me?0:1;send({t:"re",id,e})}else k.o=k.o?0:1;
 const box=$("#m"+id+" .rs");if(!box)return;box.innerHTML="";
@@ -453,12 +464,14 @@ $("#fsm").addEventListener("focus",()=>{clearTimeout(FST);$("#fsin").classList.r
 $("#fsm").addEventListener("blur",()=>{clearTimeout(FST);FST=setTimeout(()=>$("#fsin").classList.add("hide"),2500)});
 $("#rx").onclick=()=>{S.reply=null;$("#rep").classList.remove("on")};
 $("#mk").onclick=hostRoom;$("#jn").onclick=()=>joinRoom($("#jc").value);
+$("#del").onclick=()=>{if(confirm(T("delconfirm")))send({t:"delete",secret:roomSecret()})};
 $("#jc").onkeydown=e=>{if(e.key=="Enter")joinRoom(e.target.value)};
 async function copyText(t){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t);return true}}catch(e){}
 const a=document.createElement("textarea");a.value=t;a.setAttribute("readonly","");a.style.cssText="position:fixed;top:0;left:-9999px;opacity:0";document.body.appendChild(a);a.focus();a.select();a.setSelectionRange(0,a.value.length);let ok=false;try{ok=document.execCommand("copy")}catch(e){}a.remove();return ok}
 $("#cp").onclick=async()=>{const ok=await copyText(S.code);toast(ok?T("copied"):S.code)};
 $("#jc").onclick=e=>{if(e.target.value)e.target.select()};
-const q=new URLSearchParams(location.search).get("room")||location.hash.slice(1);if(q)$("#jc").value=q.toUpperCase();
+const q=new URLSearchParams(location.search).get("room")||location.hash.slice(1)||localStorage.room||"";
+if(q){$("#jc").value=q.toUpperCase();if(localStorage.n){$("#nm").value=localStorage.n;setTimeout(()=>joinRoom(q),250)}}
 fsState();
 </script>
 </body>
