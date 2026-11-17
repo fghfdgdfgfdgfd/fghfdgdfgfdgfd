@@ -203,9 +203,9 @@ video::cue{font-size:1.1em}
 <script>
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
 const D={
-fa:{tag:"تماشای دو نفره با چت",name:"نام شما",code:"کد روم",create:"ساخت روم جدید",or:"یا",join:"ورود به روم",theme:"تم",ph:"یک فایل یا لینک انتخاب کنید",load:"پخش",file:"فایل ویدیو",adv:"پیشرفته",sync:"همگام",sub:"زیرنویس",subf:"فایل زیرنویس (srt/vtt)",off:"تنظیم تفاوت زمان (من نسبت به او)",apply:"اعمال",bub:"حباب چت در تمام‌صفحه",auto:"همگام‌سازی خودکار",send:"ارسال",msg:"پیام...",url:"لینک ویدیو یا صفحه فیلم",subu:"لینک زیرنویس",lang:"English",wait:"منتظر ورود نفر دوم",con:"متصل",dis:"قطع شد",copied:"کد کپی شد",reply:"پاسخ",joined:"به روم پیوست",joining:"در حال ورود به روم...",err:"روم پیدا نشد",limit:"حداکثر ۵ پیام در ۳ ثانیه",spam:"اسپم تشخیص داده شد؛ ورودی پیام ۱ دقیقه قفل شد",locked:"قفل به مدت",delroom:"حذف روم",delconfirm:"روم و تمام چت هایش حذف شود؟",deleted:"روم حذف شد",leave:"ترک روم",left:"روم را ترک کردید",askname:"چه نامی در چت نمایش داده شود؟",continue:"ادامه",res:"در حال پیدا کردن لینک ویدیو...",pick:"طرف مقابل فایل را پخش کرد؛ همان فایل را انتخاب کنید",bad:"این فرمت/کدک در مرورگر پشتیبانی نمی‌شود",full:"روم پر است",bt:"بافر قبل از پخش (نت ضعیف)",cs:"دانلود کامل با چند اتصال، بعد پخش",bufing:"در حال بافر",pw:"منتظر آماده شدن طرف مقابل",recv:"دریافت فایل",sndf:"ارسال فایل",big:"فایل خیلی بزرگ است؛ طرف مقابل باید همان فایل را انتخاب کند",nocache:"دانلود چندبخشی ممکن نیست؛ پخش مستقیم"},
-en:{tag:"Watch together with chat",name:"Your name",code:"Room code",create:"Create new room",or:"or",join:"Join room",theme:"Theme",ph:"Pick a file or paste a link",load:"Play",file:"Video file",adv:"Advanced",sync:"Sync",sub:"Subtitles",subf:"Subtitle file (srt/vtt)",off:"Time offset (me vs. them)",apply:"Apply",bub:"Chat bubbles in fullscreen",auto:"Auto sync",send:"Send",msg:"Message...",url:"Video or page link",subu:"Subtitle link",lang:"فارسی",wait:"Waiting for partner",con:"Connected",dis:"Disconnected",copied:"Code copied",reply:"Reply",joined:"joined the room",joining:"Joining room...",err:"Room not found",limit:"Max 5 messages per 3 seconds",spam:"Spam detected; message input locked for 1 minute",locked:"Locked for",delroom:"Delete room",delconfirm:"Delete this room and all its chats?",deleted:"Room deleted",leave:"Leave room",left:"Left the room",askname:"What name should appear in chat?",continue:"Continue",res:"Finding the video link...",pick:"Partner started a file; pick the same file",bad:"Format/codec not supported by this browser",full:"Room is full",bt:"Pre-buffer before play (slow net)",cs:"Parallel full download, then play",bufing:"Buffering",pw:"waiting for partner",recv:"Receiving file",sndf:"Sending file",big:"File too large to send; partner must pick the same file",nocache:"Parallel download unavailable; streaming directly"}};
-let L=localStorage.l||"fa",AJT=null,S={ws:null,members:0,spam:{},block:{},mt:[],host:false,app:false,reply:null,hls:null,dash:null};
+fa:{tag:"تماشای دو نفره با چت",name:"نام شما",code:"کد روم",create:"ساخت روم جدید",or:"یا",join:"ورود به روم",theme:"تم",ph:"یک فایل یا لینک انتخاب کنید",load:"پخش",file:"فایل ویدیو",adv:"پیشرفته",sync:"همگام",sub:"زیرنویس",subf:"فایل زیرنویس (srt/vtt)",off:"تنظیم تفاوت زمان (من نسبت به او)",apply:"اعمال",bub:"حباب چت در تمام‌صفحه",auto:"همگام‌سازی خودکار",send:"ارسال",msg:"پیام...",url:"لینک ویدیو یا صفحه فیلم",subu:"لینک زیرنویس",lang:"English",wait:"منتظر ورود نفر دوم",con:"متصل",dis:"قطع شد",copied:"کد کپی شد",reply:"پاسخ",joined:"به روم پیوست",joining:"در حال ورود به روم...",err:"روم پیدا نشد",limit:"حداکثر ۵ پیام در ۳ ثانیه",spam:"اسپم تشخیص داده شد؛ ورودی پیام ۱ دقیقه قفل شد",locked:"قفل به مدت",delroom:"حذف روم",delconfirm:"روم و تمام چت هایش حذف شود؟",deleted:"روم حذف شد",leave:"ترک روم",left:"روم را ترک کردید",askname:"چه نامی در چت نمایش داده شود؟",continue:"ادامه",res:"در حال پیدا کردن لینک ویدیو...",pick:"طرف مقابل فایل را پخش کرد؛ همان فایل را انتخاب کنید",bad:"این فرمت/کدک در مرورگر پشتیبانی نمی‌شود",full:"روم پر است",bt:"بافر قبل از پخش (نت ضعیف)",cs:"دانلود کامل با چند اتصال، بعد پخش",bufing:"در حال بافر",pw:"منتظر آماده شدن طرف مقابل",recv:"دریافت فایل",sndf:"ارسال فایل",big:"فایل خیلی بزرگ است؛ طرف مقابل باید همان فایل را انتخاب کند",nocache:"دانلود چندبخشی ممکن نیست؛ پخش مستقیم",started:"پخش آغاز شد"},
+en:{tag:"Watch together with chat",name:"Your name",code:"Room code",create:"Create new room",or:"or",join:"Join room",theme:"Theme",ph:"Pick a file or paste a link",load:"Play",file:"Video file",adv:"Advanced",sync:"Sync",sub:"Subtitles",subf:"Subtitle file (srt/vtt)",off:"Time offset (me vs. them)",apply:"Apply",bub:"Chat bubbles in fullscreen",auto:"Auto sync",send:"Send",msg:"Message...",url:"Video or page link",subu:"Subtitle link",lang:"فارسی",wait:"Waiting for partner",con:"Connected",dis:"Disconnected",copied:"Code copied",reply:"Reply",joined:"joined the room",joining:"Joining room...",err:"Room not found",limit:"Max 5 messages per 3 seconds",spam:"Spam detected; message input locked for 1 minute",locked:"Locked for",delroom:"Delete room",delconfirm:"Delete this room and all its chats?",deleted:"Room deleted",leave:"Leave room",left:"Left the room",askname:"What name should appear in chat?",continue:"Continue",res:"Finding the video link...",pick:"Partner started a file; pick the same file",bad:"Format/codec not supported by this browser",full:"Room is full",bt:"Pre-buffer before play (slow net)",cs:"Parallel full download, then play",bufing:"Buffering",pw:"waiting for partner",recv:"Receiving file",sndf:"Sending file",big:"File too large to send; partner must pick the same file",nocache:"Parallel download unavailable; streaming directly",started:"Playback started"}};
+let L=localStorage.l||"fa",AJT=null,S={ws:null,members:0,spam:{},block:{},mt:[],host:false,app:false,reply:null,hls:null,dash:null,sid:null,playWait:0,takeoverPending:false,partnerPlayingAt:0};
 const T=k=>D[L][k]||k,v=$("#v"),stage=$("#stage");
 function i18n(){document.documentElement.lang=L;document.documentElement.dir=L=="fa"?"rtl":"ltr";
 $$("[data-i]").forEach(e=>{const t=T(e.dataset.i);if(e.querySelector("svg"))e.title=t;else e.textContent=t});$$("[data-p]").forEach(e=>e.placeholder=T(e.dataset.p));
@@ -268,7 +268,7 @@ const fromB64=str=>{const b=atob(str),u=new Uint8Array(b.length);for(let i=0;i<b
 function rx(m){switch(m.t){
 case"joined":{$("#chat").innerHTML="";for(const k in M)delete M[k];for(const k in RX)delete RX[k];
 if(S.rcode!==m.code){S.rcode=m.code;S.ref=null;S.reply=null;$("#rep").classList.remove("on");$("#bub").innerHTML="";if(v.currentSrc||S.hls||S.dash){clean();$("#ph").style.display=""}S.src=null}
-enter(m.code);S.host=!!m.host;S.members=Math.max(1,m.members||1);roomBtns();$("#dot").classList.add("on");i18n();
+enter(m.code);S.sid=m.id;S.partnerPlayingAt=0;S.host=!!m.host;S.members=Math.max(1,m.members||1);roomBtns();$("#dot").classList.add("on");i18n();
 (m.history||[]).forEach(x=>addMsg(x,x.u===CID,true));
 if(m.src&&m.src!==S.src)load(m.src,true).then(()=>send({t:"req"}));
 if(S.lf)offer(S.lf);
@@ -290,7 +290,7 @@ case"cp":{const rtt=performance.now()-m.c;(S.cs=S.cs||[]).push({r:rtt,o:m.s+rtt/
 case"st":applyState(m);break;
 case"rdy":S.pr=m.r;break;
 case"req":if(v.currentSrc||S.hls||S.dash){if(S.want)send({t:"st",p:1,c:v.currentTime,r:S.rate||1,at:snow()});else pushState(true)}break;
-case"chat":if(spamCheck(m,false))addMsg(m,m.u===CID);break;
+case"chat":if(spamCheck(m,false))addMsg(m,m.by?m.by===S.sid:m.u===CID);break;
 case"re":setRx(m.id,m.e,m.u,m.on);break;
 case"sub":break}}
 /* ---------- buffer gate ---------- */
@@ -301,7 +301,7 @@ else if(S.dash){const q=S.dash.getQualityFor?S.dash.getQualityFor("video"):0;con
 const target=!bw?2.5:bw>5e6?6:bw>2e6?4:2.5;
 return Math.max(1.5,Math.min(target,rem-1,20))};
 function bf(t){const e=$("#bf");e.textContent=t;e.style.display=t?"block":"none"}
-function gate(){if(S.want)return;S.want=true;S.pr=false;S.la=0;S.lg=Date.now();S.gt=Date.now();clearInterval(S.gi);
+function gate(){if(S.want)return;if(!S.playWait)S.playWait=Date.now();S.want=true;S.pr=false;S.la=0;S.lg=Date.now();S.gt=Date.now();clearInterval(S.gi);
 S.gi=setInterval(()=>{if(!S.want){clearInterval(S.gi);bf("");return}
 const a=ahead(),n=need(),rem=(v.duration||0)-v.currentTime,ok=v.duration>0;
 if(a>S.la+.5){S.la=a;S.lg=Date.now()}
@@ -315,17 +315,21 @@ function doPlay(){S.go=true;S.app=true;S.ref={c:v.currentTime,at:snow(),p:1,r:S.
 const p=v.play();setTimeout(()=>{S.go=false;S.app=false},600);
 if(p&&p.catch)p.catch(e=>{if(e&&e.name==="AbortError")return;S.go=false;S.app=false;$("#tap").classList.add("on")})}
 function unlock(){try{if(v.paused&&(v.currentSrc||S.hls)){S.app=true;const p=v.play();if(p&&p.catch)p.catch(()=>{});v.pause();setTimeout(()=>S.app=false,400)}}catch(e){}}
-function requestPlay(){unlock();S.lead=1;send({t:"st",p:1,c:v.currentTime,r:S.rate||1,at:snow()});gate()}
+function requestPlay(){if(!S.playWait)S.playWait=Date.now();unlock();S.lead=1;send({t:"st",p:1,c:v.currentTime,r:S.rate||1,at:snow()});gate()}
 $("#tap").onclick=e=>{e.stopPropagation();$("#tap").classList.remove("on");const x=expPos();
 if(S.ref&&S.ref.p&&x!=null){if(Math.abs(v.currentTime-x)>.5)v.currentTime=Math.max(0,x);doPlay()}else requestPlay()};
-v.addEventListener("play",ui);
+v.addEventListener("play",()=>{ui();
+/* A successful play ends the grace period. If this was a failover takeover,
+   immediately publish our state so the other member follows along. */
+if(S.takeoverPending){S.takeoverPending=false;S.playWait=0;S.lead=1;
+send({t:"st",p:1,c:v.currentTime,r:S.rate||1,at:snow(),tk:1});toast(T("started"))}});
 v.addEventListener("waiting",()=>{if(!v.paused&&!S.want&&!S.go&&v.readyState<3){S.app=true;v.pause();setTimeout(()=>S.app=false,400);S.lead=1;
 send({t:"st",p:1,c:v.currentTime,r:S.rate||1,at:snow(),g:1});gate()}});
 v.addEventListener("progress",()=>{if(!S.want&&!S.sending&&!S.rf&&!$("#dl").classList.contains("on"))bf(v.src?"⬇ "+(ahead()|0)+"s":"")});
 /* ---------- playback sync ---------- */
 function pushState(hb){const p=(!v.paused||S.want)?1:0;S.ref={c:v.currentTime,at:snow(),p,r:S.rate||1};
 send({t:"st",p,c:S.ref.c,r:S.ref.r,at:S.ref.at,hb:hb&&!v.paused&&!S.want?1:0})}
-function applyState(m){S.lead=0;S.ref={c:m.c,at:m.at||snow(),p:!!m.p,r:m.r||1};
+function applyState(m){S.lead=0;if(m.p)S.partnerPlayingAt=Date.now();if(m.tk)toast(T("started"));S.ref={c:m.c,at:m.at||snow(),p:!!m.p,r:m.r||1};
 S.app=true;setTimeout(()=>S.app=false,500);
 if(m.r&&S.rate!=m.r)setSpeed(m.r);
 const e=expPos(),far=(a,b)=>Math.abs(a-b)>.6;
@@ -340,6 +344,23 @@ setInterval(()=>{if(v.paused||S.want||S.go||!S.ref||!S.ref.p)return;const x=expP
 if(a>.6){S.app=true;v.currentTime=Math.max(0,x);setTimeout(()=>S.app=false,500)}
 else if(a>.1){S.nud=1;v.playbackRate=r*(d>0?.94:1.06);setTimeout(()=>S.nud=0,120)}
 else if(v.playbackRate!==r){S.nud=1;v.playbackRate=r;setTimeout(()=>S.nud=0,120)}},1000);
+/* ---------- 60s failover ----------
+   If playback has not actually started within a minute (autoplay blocked, a
+   stuck buffer, or the partner never signalling ready), the member that can
+   play stops waiting for the partner, becomes the leader and publishes its
+   state so everyone else follows. A member that is already being driven by a
+   playing partner is left alone. */
+const PLAY_GRACE=60000;
+setInterval(()=>{
+ if(!S.code||!S.playWait)return;
+ if(!v.paused&&!v.ended&&v.readyState>=2){S.playWait=0;S.takeoverPending=false;return}
+ if(Date.now()-S.playWait<PLAY_GRACE)return;
+ if(S.takeoverPending)return;
+ if(Date.now()-(S.partnerPlayingAt||0)<5000)return;
+ S.takeoverPending=true;S.lead=1;S.want=false;S.pr=true;bf("");
+ $("#tap").classList.remove("on");
+ doPlay();
+},1000);
 /* ---------- loading sources ---------- */
 const MEDIA=/\.(mp4|m4v|webm|mkv|mov|ogv|ogg|mp3|m4a|m3u8|mpd|ts)(\?|#|$)/i;
 async function resolve(u){if(MEDIA.test(u))return u;toast(T("res"));
@@ -374,7 +395,7 @@ catch(e){if(sg.aborted||t>8)throw e;await new Promise(z=>setTimeout(z,900*(t+1))
 dn++;$("#dl i").style.width=dn/N*100+"%";bf("⬇ "+(dn/N*100|0)+"%")}}
 await Promise.all(Array.from({length:6},w));
 return URL.createObjectURL(new Blob(parts,{type:h.headers.get("content-type")||"video/mp4"}))}
-function clean(){if(S.rf){send({t:"fstop",id:S.rf.id});S.rf=null;$("#dl").classList.remove("on")}S.lf=null;S.sending=null;if(S.ab){S.ab.abort();S.ab=null}S.want=false;if(S.hls){S.hls.destroy();S.hls=null}if(S.dash){S.dash.reset();S.dash=null}
+function clean(){if(S.rf){send({t:"fstop",id:S.rf.id});S.rf=null;$("#dl").classList.remove("on")}S.lf=null;S.sending=null;if(S.ab){S.ab.abort();S.ab=null}S.want=false;S.playWait=0;S.takeoverPending=false;S.partnerPlayingAt=0;if(S.hls){S.hls.destroy();S.hls=null}if(S.dash){S.dash.reset();S.dash=null}
 if(S.blob){URL.revokeObjectURL(S.blob);S.blob=null}v.removeAttribute("src");$$("#v track").forEach(t=>t.remove())}
 v.addEventListener("error",()=>{if(!v.src&&!S.hls&&!S.dash)return;
 if(S.badTry)return;S.badTry=true;setTimeout(()=>S.badTry=false,5000);
@@ -512,7 +533,7 @@ b.firstChild.textContent=n;b.lastChild.textContent=x;$("#bub").append(b);
 setTimeout(()=>b.classList.add("out"),6000);setTimeout(()=>b.remove(),6900)}
 function say(x){x=x.trim();if(!x)return;const t=Date.now();S.mt=S.mt.filter(z=>t-z<3000);
 if(S.mt.length>=5){toast(T("limit"));return}S.mt.push(t);
-const m={t:"chat",id:uid(),n:name(),x,q:S.reply?S.reply.x.slice(0,60):"",c:colorOf(name())};
+const m={t:"chat",id:uid(),by:S.sid,n:name(),x,q:S.reply?S.reply.x.slice(0,60):"",c:colorOf(name())};
 if(!spamCheck(m,true))return;
 send(m);addMsg(m,true);bubble(m.n,x,true);S.reply=null;$("#rep").classList.remove("on")}
 $("#sd").onclick=()=>{say($("#msg").value);$("#msg").value=""};

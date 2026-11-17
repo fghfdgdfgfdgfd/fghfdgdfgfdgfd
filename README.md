@@ -38,6 +38,11 @@ Rooms unused for 5 hours are deleted automatically. The room creator can delete 
 
 Browsers cannot play Matroska (`.mkv`) directly. The server includes ffmpeg and exposes `/api/hls?u=<video-url>`, which remuxes the file to HLS on the fly (video/audio copied, subtitles converted to WebVTT). The client uses this automatically when the browser cannot play MKV, so links play in Chrome and Firefox too. Remuxed files are cached in `data/hls/`.
 
+## Notes (v1.2)
+
+- Chat ownership is now based on a unique per-connection id (`by`) instead of the shared localStorage `cid`. Two tabs on the same browser (same `cid`) no longer render each other's messages as "mine". Reactions still use the stable per-user `cid`, and on rejoin the history uses `cid` so your old messages remain yours.
+- Playback failover: if a video hasn't actually started within 60 seconds (autoplay blocked, a stuck buffer, or the partner never signalling ready), the member that can play stops waiting, becomes the leader and publishes its position/rate; the rest of the room follows. If a partner is already playing, the other member keeps following instead of taking over.
+
 ## Notes (v1.1)
 
 - Chats are stored per room (`data/chats/<ROOM>.json`); the client clears and reloads history on every (re)join, so rooms never mix.

@@ -258,7 +258,10 @@ wss.on("connection", (ws) => {
       const id = String(m.id || uid()).slice(0, 20);
       if (list.some((y) => y.id === id)) return;
       const msg = {
-        t: "chat", id, n: me.name, u: me.cid, x, q: String(m.q || "").slice(0, 120),
+        // `u` keeps the stable per-user id (used for reactions / history), while
+        // `by` is the unique per-connection id so browsers sharing a localStorage
+        // cid (two tabs on one machine) can still tell who actually sent a message.
+        t: "chat", id, n: me.name, u: me.cid, by: me.id, x, q: String(m.q || "").slice(0, 120),
         c: /^hsl\([\d\s%]+\)$/.test(m.c || "") ? m.c : "", ts: now,
       };
       list.push(msg);
