@@ -48,7 +48,7 @@ video::cue{font-size:1.1em}
 #bub{position:absolute;left:12px;right:12px;bottom:56px;display:none;flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none}
 .fs #bub.on,.pfs #bub.on{display:flex}
 .bb{max-width:70%;background:rgba(20,26,24,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;padding:6px 12px;border-radius:18px;font-size:14px;animation:bi .7s var(--ease);transition:opacity .8s,transform .8s var(--ease)}
-.bb.out{opacity:0;transform:translateY(-10px)}
+.bb.out{opacity:0;transform:translateY(-10px)}.bb.me{align-self:flex-end}.bb span{unicode-bidi:plaintext}
 .bb i{color:#4de08f;font-style:normal;font-size:11px;display:block}
 @keyframes bi{from{opacity:0;transform:translateY(20px) scale(.9)}}
 #fsin{position:absolute;left:10px;right:10px;bottom:46px;display:none;direction:rtl}
@@ -69,9 +69,9 @@ video::cue{font-size:1.1em}
 .sw:active span:after{width:33px}
 .sw input:checked:active+span:after{transform:translateX(14px)}
 .sp{justify-content:space-between}
-#chat{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:10px;-webkit-overflow-scrolling:touch}
+#chat{direction:ltr;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:10px;-webkit-overflow-scrolling:touch}
 .m{max-width:82%;align-self:flex-start;animation:mi .6s var(--ease)}
-.m.me{align-self:flex-end}
+.m.me{align-self:flex-end}.m.me .act{margin-left:auto}.m.me .rs{justify-content:flex-end}.b{unicode-bidi:plaintext}
 @keyframes mi{from{opacity:0;transform:translateY(14px) scale(.95)}}
 .b{background:var(--bd);border-radius:18px;padding:7px 13px;word-break:break-word;-webkit-user-select:text;user-select:text;white-space:pre-wrap;transition:transform .5s var(--ease)}
 .m.me .b{background:var(--me);color:#fff}
@@ -130,7 +130,7 @@ video::cue{font-size:1.1em}
       <span class="t" id="td">0:00</span>
       <select id="spd"><option>0.5</option><option>0.75</option><option selected>1</option><option>1.25</option><option>1.5</option><option>2</option></select>
       <button id="cc" style="font-size:13px">CC</button>
-      <button id="fb">⛶</button>
+      <button id="sy2" style="font-size:16px">⟳</button><button id="fb">⛶</button>
     </div>
   </div>
 
@@ -168,8 +168,8 @@ video::cue{font-size:1.1em}
 <script>
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
 const D={
-fa:{tag:"تماشای دو نفره با چت",name:"نام شما",code:"کد روم",create:"ساخت روم جدید",or:"یا",join:"ورود به روم",theme:"تم",ph:"یک فایل یا لینک انتخاب کنید",load:"پخش",file:"فایل ویدیو",adv:"پیشرفته",sync:"همگام",sub:"زیرنویس",subf:"فایل زیرنویس (srt/vtt)",off:"تنظیم تفاوت زمان (من نسبت به او)",apply:"اعمال",bub:"حباب چت در تمام‌صفحه",auto:"همگام‌سازی خودکار",send:"ارسال",msg:"پیام...",url:"لینک ویدیو یا صفحه فیلم",subu:"لینک زیرنویس",lang:"English",wait:"منتظر ورود نفر دوم",con:"متصل",dis:"قطع شد",copied:"کد کپی شد",reply:"پاسخ",joined:"به روم پیوست",err:"روم پیدا نشد",res:"در حال پیدا کردن لینک ویدیو...",pick:"طرف مقابل فایل را پخش کرد؛ همان فایل را انتخاب کنید",bad:"این فرمت/کدک در مرورگر پشتیبانی نمی‌شود",full:"روم پر است",bt:"بافر قبل از پخش (نت ضعیف)",cs:"دانلود کامل با چند اتصال، بعد پخش",bufing:"در حال بافر",nocache:"دانلود چندبخشی ممکن نیست؛ پخش مستقیم"},
-en:{tag:"Watch together with chat",name:"Your name",code:"Room code",create:"Create new room",or:"or",join:"Join room",theme:"Theme",ph:"Pick a file or paste a link",load:"Play",file:"Video file",adv:"Advanced",sync:"Sync",sub:"Subtitles",subf:"Subtitle file (srt/vtt)",off:"Time offset (me vs. them)",apply:"Apply",bub:"Chat bubbles in fullscreen",auto:"Auto sync",send:"Send",msg:"Message...",url:"Video or page link",subu:"Subtitle link",lang:"فارسی",wait:"Waiting for partner",con:"Connected",dis:"Disconnected",copied:"Code copied",reply:"Reply",joined:"joined the room",err:"Room not found",res:"Finding the video link...",pick:"Partner started a file; pick the same file",bad:"Format/codec not supported by this browser",full:"Room is full",bt:"Pre-buffer before play (slow net)",cs:"Parallel full download, then play",bufing:"Buffering",nocache:"Parallel download unavailable; streaming directly"}};
+fa:{tag:"تماشای دو نفره با چت",name:"نام شما",code:"کد روم",create:"ساخت روم جدید",or:"یا",join:"ورود به روم",theme:"تم",ph:"یک فایل یا لینک انتخاب کنید",load:"پخش",file:"فایل ویدیو",adv:"پیشرفته",sync:"همگام",sub:"زیرنویس",subf:"فایل زیرنویس (srt/vtt)",off:"تنظیم تفاوت زمان (من نسبت به او)",apply:"اعمال",bub:"حباب چت در تمام‌صفحه",auto:"همگام‌سازی خودکار",send:"ارسال",msg:"پیام...",url:"لینک ویدیو یا صفحه فیلم",subu:"لینک زیرنویس",lang:"English",wait:"منتظر ورود نفر دوم",con:"متصل",dis:"قطع شد",copied:"کد کپی شد",reply:"پاسخ",joined:"به روم پیوست",err:"روم پیدا نشد",res:"در حال پیدا کردن لینک ویدیو...",pick:"طرف مقابل فایل را پخش کرد؛ همان فایل را انتخاب کنید",bad:"این فرمت/کدک در مرورگر پشتیبانی نمی‌شود",full:"روم پر است",bt:"بافر قبل از پخش (نت ضعیف)",cs:"دانلود کامل با چند اتصال، بعد پخش",bufing:"در حال بافر",pw:"منتظر آماده شدن طرف مقابل",recv:"دریافت فایل",sndf:"ارسال فایل",big:"فایل خیلی بزرگ است؛ طرف مقابل باید همان فایل را انتخاب کند",nocache:"دانلود چندبخشی ممکن نیست؛ پخش مستقیم"},
+en:{tag:"Watch together with chat",name:"Your name",code:"Room code",create:"Create new room",or:"or",join:"Join room",theme:"Theme",ph:"Pick a file or paste a link",load:"Play",file:"Video file",adv:"Advanced",sync:"Sync",sub:"Subtitles",subf:"Subtitle file (srt/vtt)",off:"Time offset (me vs. them)",apply:"Apply",bub:"Chat bubbles in fullscreen",auto:"Auto sync",send:"Send",msg:"Message...",url:"Video or page link",subu:"Subtitle link",lang:"فارسی",wait:"Waiting for partner",con:"Connected",dis:"Disconnected",copied:"Code copied",reply:"Reply",joined:"joined the room",err:"Room not found",res:"Finding the video link...",pick:"Partner started a file; pick the same file",bad:"Format/codec not supported by this browser",full:"Room is full",bt:"Pre-buffer before play (slow net)",cs:"Parallel full download, then play",bufing:"Buffering",pw:"waiting for partner",recv:"Receiving file",sndf:"Sending file",big:"File too large to send; partner must pick the same file",nocache:"Parallel download unavailable; streaming directly"}};
 let L=localStorage.l||"fa",S={conn:null,host:false,off:0,app:false,rt:0,rts:0,reply:null,hls:null,dash:null};
 const T=k=>D[L][k]||k,v=$("#v"),stage=$("#stage");
 function i18n(){document.documentElement.lang=L;document.documentElement.dir=L=="fa"?"rtl":"ltr";
@@ -197,16 +197,24 @@ function joinRoom(code){code=code.trim().toUpperCase();if(code.length<4)return;c
 p.on("open",()=>{const c=p.connect("wp-"+code,{reliable:true});setup(c,code);setTimeout(()=>{if(!c.open)toast(T("err"))},9000)});
 p.on("error",e=>toast(e.type=="peer-unavailable"?T("err"):e.type))}
 function setup(c,code){S.conn=c;c.on("open",()=>{if(code)enter(code);$("#dot").classList.add("on");i18n();
-send({t:"hi",n:name()});if(S.host&&S.src)send({t:"src",u:S.src})});
+send({t:"hi",n:name()});if(S.host&&S.src)send({t:"src",u:S.src});if(S.lf)offer(S.lf)});
 c.on("data",rx);c.on("close",()=>{$("#dot").classList.remove("on");$("#st").textContent=T("dis")});}
 const send=o=>S.conn&&S.conn.open&&S.conn.send(o);
 function rx(m){switch(m.t){
 case"full":toast(T("full"));break;
 case"hi":S.pn=m.n;sys(m.n+" "+T("joined"));break;
-case"src":if(m.f)toast(T("pick"));else load(m.u,true);break;
+case"src":load(m.u,true);break;
+case"fmeta":onMeta(m);break;
+case"fgo":if(m.id===S.fid)pump(m.id);break;
+case"fno":toast(T("big"));break;
+case"fstop":if(S.sending===m.id)S.sending=null;break;
+case"fc":if(S.rf&&S.rf.id===m.id){S.rf.p.push(m.d);S.rf.g+=(m.d.byteLength||m.d.size||0);const q=S.rf.g/S.rf.z;$("#dl").classList.add("on");$("#dl i").style.width=q*100+"%";bf(T("recv")+" "+(q*100|0)+"%")}break;
+case"fdone":if(S.rf&&S.rf.id===m.id)fin();break;
+case"pg":send({t:"po",ts:m.ts});break;
+case"po":{const l=(performance.now()-m.ts)/2000;S.lat=S.lat?S.lat*.6+l*.4:l;break}
 case"st":applyState(m);break;
 case"rdy":S.pr=m.r;break;
-case"req":pushState();break;
+case"req":S.want?send({t:"st",p:1,c:v.currentTime,r:v.playbackRate}):pushState();break;
 case"chat":addMsg(m,false);break;
 case"re":react(m.id,m.e,false);break;
 case"sub":break}}
@@ -214,27 +222,32 @@ case"sub":break}}
 const ahead=()=>{const t=v.currentTime,b=v.buffered;for(let i=0;i<b.length;i++)if(t>=b.start(i)-.4&&t<=b.end(i))return b.end(i)-t;return 0};
 const need=()=>Math.max(2,Math.min(+$("#bt").value,(v.duration||0)-v.currentTime-1));
 function bf(t){const e=$("#bf");e.textContent=t;e.style.display=t?"block":"none"}
-function gate(){S.want=true;S.pr=false;S.mr=null;clearInterval(S.gi);
+function gate(){if(S.want)return;S.want=true;S.pr=false;S.la=0;S.lg=Date.now();clearInterval(S.gi);
 S.gi=setInterval(()=>{if(!S.want){clearInterval(S.gi);bf("");return}
-const a=ahead(),r=a>=need()||(v.readyState>=4&&v.duration-v.currentTime<need()+1);
-bf(T("bufing")+" "+(a|0)+"s / "+(need()|0)+"s");
-if(r!==S.mr){S.mr=r;send({t:"rdy",r})}
-if(r&&(S.pr||!(S.conn&&S.conn.open))){S.want=false;S.go=true;S.app=true;bf("");v.play().catch(()=>toast("▶"));setTimeout(()=>{S.go=false;S.app=false},600)}},400)}
+const a=ahead(),n=need(),rem=(v.duration||0)-v.currentTime,ok=v.duration>0;
+if(a>S.la+.5){S.la=a;S.lg=Date.now()}
+const stalled=Date.now()-S.lg>3500;
+const r=ok&&(a>=n||a>=rem-.5||(stalled&&a>=Math.min(n,10))||(v.readyState>=4&&rem<n+1));
+const op=S.conn&&S.conn.open;
+bf(T("bufing")+" "+(a|0)+"s / "+(n|0)+"s"+(r&&op&&!S.pr?" · "+T("pw"):""));
+send({t:"rdy",r});
+if(r&&(S.pr||!op)){S.want=false;S.go=true;S.app=true;bf("");v.play().catch(()=>toast("▶"));setTimeout(()=>{S.go=false;S.app=false},600)}},400)}
 v.addEventListener("play",()=>{ui();if(S.go)return;S.app=true;v.pause();setTimeout(()=>S.app=false,150);
 if(!S.want){send({t:"st",p:1,c:v.currentTime,r:v.playbackRate});gate()}});
 v.addEventListener("waiting",()=>{if(!v.paused&&!S.want&&!S.go&&v.readyState<3){v.pause();setTimeout(()=>{send({t:"st",p:1,c:v.currentTime,r:v.playbackRate});gate()},80)}});
-v.addEventListener("progress",()=>{if(!S.want&&!$("#dl").classList.contains("on"))bf(v.src?"⬇ "+(ahead()|0)+"s":"")});
+v.addEventListener("progress",()=>{if(!S.want&&!S.sending&&!S.rf&&!$("#dl").classList.contains("on"))bf(v.src?"⬇ "+(ahead()|0)+"s":"")});
 /* ---------- playback sync ---------- */
 function pushState(){send({t:"st",p:!v.paused,c:v.currentTime,r:v.playbackRate})}
 function applyState(m){S.rt=m.c;S.rts=Date.now();S.app=true;
-const want=m.c+S.off+(m.p?0:0);if(Math.abs(v.currentTime-want)>0.8)v.currentTime=Math.max(0,want);
+const want=m.c+S.off+(m.p?(S.lat||0):0);if(Math.abs(v.currentTime-want)>0.5)v.currentTime=Math.max(0,want);
 if(v.playbackRate!=m.r){v.playbackRate=m.r;$("#spd").value=m.r}
 if(m.p&&v.paused)gate();if(!m.p){S.want=false;if(!v.paused)v.pause()}
 setTimeout(()=>S.app=false,500)}
 const sync=()=>{if(!S.app&&$("#as").checked)pushState()};
 ["pause","seeked","ratechange"].forEach(e=>v.addEventListener(e,()=>{sync();ui()}));
-setInterval(()=>{if(!v.paused&&S.host&&$("#as").checked)pushState()},5000);
-$("#sy").onclick=()=>{send({t:"req"})};
+setInterval(()=>{if(!v.paused&&S.host&&!S.want&&$("#as").checked)pushState()},2500);
+setInterval(()=>{if(!S.host)send({t:"pg",ts:performance.now()})},3000);
+$("#sy").onclick=()=>{send({t:"req"})};$("#sy2").onclick=()=>$("#sy").click();
 $("#oa").onclick=()=>{S.off=(+$("#os").value)*((+$("#om").value||0)*60+(+$("#ossec").value||0));
 if(S.rts){const e=S.rt+(v.paused?0:(Date.now()-S.rts)/1000);v.currentTime=Math.max(0,e+S.off)}toast("✓ "+S.off+"s")};
 /* ---------- loading sources ---------- */
@@ -263,13 +276,29 @@ catch(e){if(sg.aborted||t>8)throw e;await new Promise(z=>setTimeout(z,900*(t+1))
 dn++;$("#dl i").style.width=dn/N*100+"%";bf("⬇ "+(dn/N*100|0)+"%")}}
 await Promise.all(Array.from({length:6},w));
 return URL.createObjectURL(new Blob(parts,{type:h.headers.get("content-type")||"video/mp4"}))}
-function clean(){if(S.ab){S.ab.abort();S.ab=null}S.want=false;if(S.hls){S.hls.destroy();S.hls=null}if(S.dash){S.dash.reset();S.dash=null}
+function clean(){if(S.rf){send({t:"fstop",id:S.rf.id});S.rf=null;$("#dl").classList.remove("on")}S.lf=null;S.sending=null;if(S.ab){S.ab.abort();S.ab=null}S.want=false;if(S.hls){S.hls.destroy();S.hls=null}if(S.dash){S.dash.reset();S.dash=null}
 if(S.blob){URL.revokeObjectURL(S.blob);S.blob=null}v.removeAttribute("src");$$("#v track").forEach(t=>t.remove())}
 v.addEventListener("error",()=>{if(v.src||S.hls||S.dash)toast(T("bad"))});
 $("#go").onclick=()=>load($("#url").value);
 $("#url").onkeydown=e=>{if(e.key=="Enter")load(e.target.value)};
-$("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;clean();S.src=null;
-S.blob=URL.createObjectURL(f);v.src=S.blob;$("#ph").style.display="none";send({t:"src",f:f.name})};
+$("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=S.rf;
+if(r&&r.n==f.name&&r.z==f.size){send({t:"fstop",id:r.id});S.rf=null;$("#dl").classList.remove("on");bf("");useFile(f);return}
+useFile(f);offer(f)};
+/* ---------- file transfer over WebRTC ---------- */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function useFile(f){clean();S.lf=f;S.blob=URL.createObjectURL(f);v.src=S.blob;$("#ph").style.display="none"}
+function offer(f){S.fid=uid();send({t:"fmeta",id:S.fid,n:f.name,z:f.size,y:f.type})}
+function onMeta(m){if(S.lf&&S.lf.name==m.n&&S.lf.size==m.z)return;
+if(m.z>1.2e9){send({t:"fno",id:m.id});toast(T("pick"));return}
+if(S.rf)send({t:"fstop",id:S.rf.id});
+S.rf={id:m.id,n:m.n,z:m.z,y:m.y,p:[],g:0};send({t:"fgo",id:m.id});bf(T("recv")+" 0%")}
+function fin(){const r=S.rf;S.rf=null;$("#dl").classList.remove("on");bf("");useFile(new File(r.p,r.n,{type:r.y||"video/mp4"}));toast("✓ "+r.n)}
+async function pump(id){const f=S.lf,c=S.conn;if(!f||!c)return;const C=131072;S.sending=id;
+for(let o=0;o<f.size;o+=C){if(S.sending!==id||!c.open)return;
+while(c.dataChannel&&c.dataChannel.bufferedAmount>4e6){await sleep(40);if(S.sending!==id||!c.open)return}
+c.send({t:"fc",id,d:await f.slice(o,o+C).arrayBuffer()});
+if((o/C)%16==0)bf(T("sndf")+" "+(o/f.size*100|0)+"%")}
+send({t:"fdone",id});S.sending=null;bf("")}
 /* ---------- subtitles ---------- */
 function addSub(txt){let t=txt.replace(/^\uFEFF/,"").replace(/\r/g,"");
 if(!/^WEBVTT/.test(t))t="WEBVTT\n\n"+t.replace(/(\d+:\d+:\d+),(\d+)/g,"$1.$2");
@@ -322,11 +351,11 @@ function react(id,e,mine){const r=RX[id]=RX[id]||{};const k=r[e]=r[e]||{me:0,o:0
 if(mine){k.me=k.me?0:1;send({t:"re",id,e})}else k.o=k.o?0:1;
 const box=$("#m"+id+" .rs");if(!box)return;box.innerHTML="";
 for(const x in r){const n=r[x].me+r[x].o;if(n){const s=document.createElement("span");s.className=r[x].me?"me":"";s.textContent=x+(n>1?" "+n:"");box.append(s)}}}
-function bubble(n,x){if(!$("#bs").checked)return;const b=document.createElement("div");b.className="bb";b.innerHTML="<i></i><span></span>";
+function bubble(n,x,mine){if(!$("#bs").checked)return;const b=document.createElement("div");b.className="bb"+(mine?" me":"");b.innerHTML="<i></i><span></span>";
 b.firstChild.textContent=n;b.lastChild.textContent=x;$("#bub").append(b);
 setTimeout(()=>b.classList.add("out"),6000);setTimeout(()=>b.remove(),6900)}
 function say(x){x=x.trim();if(!x)return;const m={t:"chat",id:uid(),n:name(),x,q:S.reply?S.reply.x.slice(0,60):""};
-send(m);addMsg(m,true);bubble(m.n,x);S.reply=null;$("#rep").classList.remove("on")}
+send(m);addMsg(m,true);bubble(m.n,x,true);S.reply=null;$("#rep").classList.remove("on")}
 $("#sd").onclick=()=>{say($("#msg").value);$("#msg").value=""};
 $("#msg").onkeydown=e=>{if(e.key=="Enter"){$("#sd").click()}};
 $("#fsm").onkeydown=e=>{if(e.key=="Enter"){say(e.target.value);e.target.value=""}};
