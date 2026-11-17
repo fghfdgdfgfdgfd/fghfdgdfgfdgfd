@@ -15,7 +15,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const HLS_ROOT = path.join(DATA, "hls");
 fs.mkdirSync(CHATS, { recursive: true });
 fs.mkdirSync(HLS_ROOT, { recursive: true });
-const hlsJobs = new Map();
+const hlsJobs = new Map(), hlsFail = new Map();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const run = (cmd, args, ms = 15000) => new Promise((resolve) => {
@@ -35,18 +35,20 @@ async function startHls(mediaUrl) {
   fs.mkdirSync(dir, { recursive: true });
   const playlist = path.join(dir, "index.m3u8");
   if (!fs.existsSync(playlist) && !hlsJobs.has(id)) {
+    if (Date.now() - (hlsFail.get(id) || 0) < 60000) throw new Error("ffmpeg failed to read this video");
     hlsJobs.set(id, null);
-    const info = await run("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name,pix_fmt", "-of", "csv=p=0", mediaUrl]);
+    const info = await run("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name,pix_fmt", "-of", "csv=p=0", "-probesize", "5000000", "-analyzeduration", "5000000", mediaUrl], 25000);
     const vcopy = /^h264,yuv420p/.test(info);
     const job = spawn("ffmpeg", [
       "-hide_banner", "-loglevel", "error", "-i", mediaUrl, "-map", "0:v:0", "-map", "0:a:0?", "-sn",
-      ...(vcopy ? ["-c:v", "copy"] : ["-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p"]),
+      ...(vcopy ? ["-c:v", "copy"] : ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "23", "-pix_fmt", "yuv420p"]),
       "-c:a", "aac", "-b:a", "160k", "-ac", "2",
       "-f", "hls", "-hls_time", "6", "-hls_list_size", "0", "-hls_playlist_type", "event", "-hls_flags", "independent_segments",
       "-hls_segment_filename", path.join(dir, "seg%d.ts"), playlist,
     ], { stdio: "ignore" });
     hlsJobs.set(id, job);
-    job.on("exit", () => hlsJobs.delete(id));
+    job.on("error", () => { hlsJobs.delete(id); hlsFail.set(id, Date.now()); });
+    job.on("exit", () => { hlsJobs.delete(id); if (!fs.existsSync(playlist)) hlsFail.set(id, Date.now()); });
     setTimeout(() => { if (hlsJobs.get(id) === job) { job.kill(); hlsJobs.delete(id); } }, 3 * 60 * 60 * 1000).unref();
     // first subtitle track -> WebVTT (published only when complete)
     const tmp = path.join(dir, "sub.tmp"), sub = path.join(dir, "sub.vtt");

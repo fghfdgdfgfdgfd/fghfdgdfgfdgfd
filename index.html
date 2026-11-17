@@ -308,7 +308,7 @@ if(a>S.la+.5){S.la=a;S.lg=Date.now()}
 const stalled=Date.now()-S.lg>3500;
 const r=ok&&(a>=n||a>=rem-.5||(stalled&&a>=Math.min(n,10))||(v.readyState>=4&&rem<n+1)||(Date.now()-S.gt>6000&&a>=1.5));
 const op=S.members>1;
-bf(T("bufing")+" "+(a|0)+"s / "+(n|0)+"s"+(r&&op&&!S.pr?" · "+T("pw"):""));
+bf((ok?T("bufing")+" "+(a|0)+"s / "+(n|0)+"s":T("res"))+(r&&op&&!S.pr?" · "+T("pw"):""));
 send({t:"rdy",r});
 if(r&&(S.pr||!op)){S.want=false;bf("");doPlay()}},400)}
 function doPlay(){S.go=true;S.app=true;S.ref={c:v.currentTime,at:snow(),p:1,r:S.rate||1};
@@ -349,12 +349,13 @@ const mm=t.match(/https?:\/\/[^"'\s<>\\)]+?\.(m3u8|mpd|mp4|webm|mkv)[^"'\s<>\\)]
 const og=t.match(/property=["']og:video(?::url)?["'][^>]*content=["']([^"']+)/i);
 if(mm)return mm[0];if(og)return og[1]}catch(e){}}
 return u}
-async function hlsify(u){try{const r=await fetch("/api/hls?u="+encodeURIComponent(u));const j=await r.json();return j.url?j:null}catch(e){return null}}
-async function load(u,fromRemote){u=u.trim();if(!u)return;let real=await resolve(u),HS=null;S.src=u;
-if(/\.(mkv|avi|ts|wmv|flv)(\?|#|$)/i.test(real)){
-toast(T("res"));const hj=await hlsify(real);if(hj){real=hj.url;HS=hj.sub}}
+async function hlsify(u){try{const r=await fetch("/api/hls?u="+encodeURIComponent(u));const j=await r.json();return j.url?j:(j.error?{err:j.error}:null)}catch(e){return{err:"server unavailable"}}}
+async function load(u,fromRemote,forceHls){u=u.trim();if(!u)return;let real=await resolve(u),HS=null;S.src=u;
+if(/\.(avi|ts|wmv|flv)(\?|#|$)/i.test(real)||/\.mkv(\?|#|$)/i.test(real)&&(forceHls||!v.canPlayType("video/x-matroska"))){
+let hj=null;for(let i=0;i<24&&!hj&&S.src===u;i++){toast(T("res")+(i?" · "+i*20+"s":""));hj=await hlsify(real);if(!hj)await sleep(1500)}
+if(S.src!==u)return;if(!hj||hj.err){toast(T("bad")+(hj&&hj.err?" · "+hj.err:""));return}real=hj.url;HS=hj.sub}
 clean();$("#ph").style.display="none";
-if(/\.m3u8/i.test(real)&&window.Hls&&Hls.isSupported()){S.hls=new Hls({maxBufferLength:15,maxMaxBufferLength:20,maxBufferSize:3e8,maxBufferHole:.5,startPosition:/^\/hls\//.test(real)?0:-1,startLevel:0,abrEwmaDefaultEstimate:3e5,abrBandWidthFactor:.7,abrBandWidthUpFactor:.5,fragLoadPolicy:{default:{maxTimeToFirstByteMs:20000,maxLoadTimeMs:120000,timeoutRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000},errorRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000}}}});S.hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal){if(d.type=="networkError")S.hls.startLoad();else if(d.type=="mediaError")S.hls.recoverMediaError()}});S.hls.loadSource(real);S.hls.attachMedia(v)}
+if(/\.m3u8/i.test(real)&&window.Hls&&Hls.isSupported()){S.hls=new Hls({maxBufferLength:15,maxMaxBufferLength:20,maxBufferSize:3e8,maxBufferHole:.5,startPosition:/^\/hls\//.test(real)?0:-1,startLevel:0,abrEwmaDefaultEstimate:3e5,abrBandWidthFactor:.7,abrBandWidthUpFactor:.5,fragLoadPolicy:{default:{maxTimeToFirstByteMs:20000,maxLoadTimeMs:120000,timeoutRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000},errorRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000}}}});S.hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal){toast("HLS: "+d.details);if(d.type=="networkError")S.hls.startLoad();else if(d.type=="mediaError")S.hls.recoverMediaError()}});S.hls.loadSource(real);S.hls.attachMedia(v)}
 else if(/\.mpd/i.test(real)&&window.dashjs){S.dash=dashjs.MediaPlayer().create();S.dash.updateSettings({streaming:{buffer:{bufferTimeDefault:20,bufferTimeAtTopQuality:20,bufferTimeAtTopQualityLongForm:20},abr:{initialBitrate:{video:300}},retryAttempts:{MediaSegment:8,MPD:5},retryIntervals:{MediaSegment:1500}}});S.dash.initialize(v,real,false)}
 else if($("#cs").checked){try{$("#dl").classList.add("on");const b=await pdl(real);if(S.src!==u)return;S.blob=b;v.src=b}catch(e){if(e&&e.name=="AbortError")return;toast(T("nocache"));v.src=real}$("#dl").classList.remove("on")}
 else v.src=real;
@@ -377,6 +378,7 @@ function clean(){if(S.rf){send({t:"fstop",id:S.rf.id});S.rf=null;$("#dl").classL
 if(S.blob){URL.revokeObjectURL(S.blob);S.blob=null}v.removeAttribute("src");$$("#v track").forEach(t=>t.remove())}
 v.addEventListener("error",()=>{if(!v.src&&!S.hls&&!S.dash)return;
 if(S.badTry)return;S.badTry=true;setTimeout(()=>S.badTry=false,5000);
+if(S.src&&/\.mkv(\?|#|$)/i.test(S.src)&&S.hlsTried!==S.src&&!S.hls){S.hlsTried=S.src;toast(T("res"));load(S.src,true,true).then(()=>{if(S.ref&&S.ref.p)gate()});return}
 const u=S.src;
 if(u&&/\.(mp4|m4v|webm|mkv|mov|ogv|ts)(\?|#|$)/i.test(u)&&!S.blob){
 toast(T("res"));pdl(u).then(b=>{if(S.src!==u)return;S.blob=b;v.src=b;const p=v.play();if(p&&p.catch)p.catch(()=>{})}).catch(()=>toast(T("bad")))
