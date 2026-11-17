@@ -173,7 +173,7 @@ video::cue{font-size:1.1em}
       <div class="row"><input type="text" id="su" data-p="subu" dir="ltr" autocapitalize="off"><button class="btn" id="sg" data-i="load"></button></div>
       <label class="btn" style="text-align:center"><span data-i="subf"></span><input id="sf" type="file" accept=".srt,.vtt,.ass,.txt" hidden></label>
       <div class="row sp"><span data-i="bub"></span><label class="sw"><input type="checkbox" id="bs" checked><span></span></label></div>
-      <div class="row sp"><span data-i="bt"></span><select id="bt" class="btn"><option value="5">5s</option><option value="10">10s</option><option value="20" selected>20s</option></select></div>
+      <div class="row sp"><span data-i="bt"></span><select id="bt" class="btn"><option value="2">2s</option><option value="5" selected>5s</option><option value="10">10s</option></select></div>
       <div class="row sp"><span data-i="cs"></span><label class="sw"><input type="checkbox" id="cs"><span></span></label></div>
     </div></div>
   </div>
@@ -256,12 +256,12 @@ case"sub":break}}
 const ahead=()=>{const t=v.currentTime,b=v.buffered;for(let i=0;i<b.length;i++)if(t>=b.start(i)-.4&&t<=b.end(i))return b.end(i)-t;return 0};
 const need=()=>Math.max(2,Math.min(20,+$("#bt").value,(v.duration||0)-v.currentTime-1));
 function bf(t){const e=$("#bf");e.textContent=t;e.style.display=t?"block":"none"}
-function gate(){if(S.want)return;S.want=true;S.pr=false;S.la=0;S.lg=Date.now();clearInterval(S.gi);
+function gate(){if(S.want)return;S.want=true;S.pr=false;S.la=0;S.lg=Date.now();S.gt=Date.now();clearInterval(S.gi);
 S.gi=setInterval(()=>{if(!S.want){clearInterval(S.gi);bf("");return}
 const a=ahead(),n=need(),rem=(v.duration||0)-v.currentTime,ok=v.duration>0;
 if(a>S.la+.5){S.la=a;S.lg=Date.now()}
 const stalled=Date.now()-S.lg>3500;
-const r=ok&&(a>=n||a>=rem-.5||(stalled&&a>=Math.min(n,10))||(v.readyState>=4&&rem<n+1));
+const r=ok&&(a>=n||a>=rem-.5||(stalled&&a>=Math.min(n,10))||(v.readyState>=4&&rem<n+1)||(Date.now()-S.gt>8000&&a>=2));
 const op=online();
 bf(T("bufing")+" "+(a|0)+"s / "+(n|0)+"s"+(r&&op&&!S.pr?" · "+T("pw"):""));
 send({t:"rdy",r});
@@ -296,7 +296,7 @@ if(/\.m3u8/i.test(real)&&window.Hls&&Hls.isSupported()){S.hls=new Hls({maxBuffer
 else if(/\.mpd/i.test(real)&&window.dashjs){S.dash=dashjs.MediaPlayer().create();S.dash.updateSettings({streaming:{buffer:{bufferTimeDefault:20,bufferTimeAtTopQuality:20,bufferTimeAtTopQualityLongForm:20},abr:{initialBitrate:{video:300}},retryAttempts:{MediaSegment:8,MPD:5},retryIntervals:{MediaSegment:1500}}});S.dash.initialize(v,real,false)}
 else if($("#cs").checked){try{$("#dl").classList.add("on");const b=await pdl(real);if(S.src!==u)return;S.blob=b;v.src=b}catch(e){if(e&&e.name=="AbortError")return;toast(T("nocache"));v.src=real}$("#dl").classList.remove("on")}
 else v.src=real;
-if(!fromRemote){send({t:"src",u});setTimeout(()=>{const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{})},60)}
+if(!fromRemote){send({t:"src",u});setTimeout(()=>{const pr=v.play();if(pr&&pr.catch)pr.catch(()=>gate())},60)}
 if(!/\.(srt|vtt)$/i.test(real)){
 if(/\.(mkv|webm|avi|ts)(\?|#|$)/i.test(real))embeddedSub(real).then(ok=>{if(!ok)autoSub(real)});
 else autoSub(real);}}
