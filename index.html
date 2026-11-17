@@ -192,7 +192,7 @@ const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
 const D={
 fa:{tag:"تماشای دو نفره با چت",name:"نام شما",code:"کد روم",create:"ساخت روم جدید",or:"یا",join:"ورود به روم",theme:"تم",ph:"یک فایل یا لینک انتخاب کنید",load:"پخش",file:"فایل ویدیو",adv:"پیشرفته",sync:"همگام",sub:"زیرنویس",subf:"فایل زیرنویس (srt/vtt)",off:"تنظیم تفاوت زمان (من نسبت به او)",apply:"اعمال",bub:"حباب چت در تمام‌صفحه",auto:"همگام‌سازی خودکار",send:"ارسال",msg:"پیام...",url:"لینک ویدیو یا صفحه فیلم",subu:"لینک زیرنویس",lang:"English",wait:"منتظر ورود نفر دوم",con:"متصل",dis:"قطع شد",copied:"کد کپی شد",reply:"پاسخ",joined:"به روم پیوست",joining:"در حال ورود به روم...",err:"روم پیدا نشد",limit:"حداکثر ۵ پیام در ۳ ثانیه",spam:"اسپم تشخیص داده شد؛ ورودی پیام ۱ دقیقه قفل شد",locked:"قفل به مدت",delroom:"حذف روم",delconfirm:"روم و تمام چت هایش حذف شود؟",deleted:"روم حذف شد",res:"در حال پیدا کردن لینک ویدیو...",pick:"طرف مقابل فایل را پخش کرد؛ همان فایل را انتخاب کنید",bad:"این فرمت/کدک در مرورگر پشتیبانی نمی‌شود",full:"روم پر است",bt:"بافر قبل از پخش (نت ضعیف)",cs:"دانلود کامل با چند اتصال، بعد پخش",bufing:"در حال بافر",pw:"منتظر آماده شدن طرف مقابل",recv:"دریافت فایل",sndf:"ارسال فایل",big:"فایل خیلی بزرگ است؛ طرف مقابل باید همان فایل را انتخاب کند",nocache:"دانلود چندبخشی ممکن نیست؛ پخش مستقیم"},
 en:{tag:"Watch together with chat",name:"Your name",code:"Room code",create:"Create new room",or:"or",join:"Join room",theme:"Theme",ph:"Pick a file or paste a link",load:"Play",file:"Video file",adv:"Advanced",sync:"Sync",sub:"Subtitles",subf:"Subtitle file (srt/vtt)",off:"Time offset (me vs. them)",apply:"Apply",bub:"Chat bubbles in fullscreen",auto:"Auto sync",send:"Send",msg:"Message...",url:"Video or page link",subu:"Subtitle link",lang:"فارسی",wait:"Waiting for partner",con:"Connected",dis:"Disconnected",copied:"Code copied",reply:"Reply",joined:"joined the room",joining:"Joining room...",err:"Room not found",limit:"Max 5 messages per 3 seconds",spam:"Spam detected; message input locked for 1 minute",locked:"Locked for",delroom:"Delete room",delconfirm:"Delete this room and all its chats?",deleted:"Room deleted",res:"Finding the video link...",pick:"Partner started a file; pick the same file",bad:"Format/codec not supported by this browser",full:"Room is full",bt:"Pre-buffer before play (slow net)",cs:"Parallel full download, then play",bufing:"Buffering",pw:"waiting for partner",recv:"Receiving file",sndf:"Sending file",big:"File too large to send; partner must pick the same file",nocache:"Parallel download unavailable; streaming directly"}};
-let L=localStorage.l||"fa",S={ws:null,spam:{},block:{},mt:[],host:false,app:false,reply:null,hls:null,dash:null};
+let L=localStorage.l||"fa",AJT=null,S={ws:null,members:0,spam:{},block:{},mt:[],host:false,app:false,reply:null,hls:null,dash:null};
 const T=k=>D[L][k]||k,v=$("#v"),stage=$("#stage");
 function i18n(){document.documentElement.lang=L;document.documentElement.dir=L=="fa"?"rtl":"ltr";
 $$("[data-i]").forEach(e=>{const t=T(e.dataset.i);if(e.querySelector("svg"))e.title=t;else e.textContent=t});$$("[data-p]").forEach(e=>e.placeholder=T(e.dataset.p));
@@ -225,8 +225,8 @@ function connectWS(){return new Promise(res=>{
  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}rx(m)};
 })}
 const roomSecret=()=>{if(!localStorage.rt)localStorage.rt=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);return localStorage.rt};
-async function hostRoom(){S.host=true;toast(T("joining"));const ws=await connectWS();if(!ws)return;send({t:"create",n:name(),secret:roomSecret()})}
-async function joinRoom(code,attempt){code=(code||"").trim().replace(/^wp-/i,"").toUpperCase();
+async function hostRoom(){clearTimeout(AJT);S.host=true;toast(T("joining"));const ws=await connectWS();if(!ws)return;send({t:"create",n:name(),secret:roomSecret()})}
+async function joinRoom(code,attempt){clearTimeout(AJT);code=(code||"").trim().replace(/^wp-/i,"").toUpperCase();
 if(code.length<4){toast(T("err"));return}attempt=attempt||0;
 if(S.ws)try{S.ws.close()}catch(e){}
 S.host=false;toast(T("joining"));const ws=await connectWS();if(!ws)return;
@@ -235,15 +235,16 @@ setTimeout(()=>{if(!S.code&&attempt<2)joinRoom(code,attempt+1);else if(!S.code)t
 const toB64=buf=>{const u=new Uint8Array(buf);let s="";for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
 const fromB64=str=>{const b=atob(str),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
 function rx(m){switch(m.t){
-case"joined":enter(m.code);S.host=!!m.host;$("#dot").classList.add("on");i18n();
+case"joined":enter(m.code);S.host=!!m.host;S.members=Math.max(1,m.members||1);$("#dot").classList.add("on");i18n();
 (m.history||[]).forEach(msg=>addMsg(msg,false,true));
 if(S.host&&S.src)send({t:"src",u:S.src});
 if(S.lf)offer(S.lf);
 setTimeout(()=>send({t:"req"}),900);break;
 case"err":toast(m.msg||T("err"));if(/not found/i.test(m.msg||"")){delete localStorage.room;S.code=null;document.body.classList.remove("in");history.replaceState(null,"",location.pathname)}break;
-case"deleted":delete localStorage.room;S.code=null;document.body.classList.remove("in");history.replaceState(null,"",location.pathname);toast(T("deleted"));break;
+case"deleted":delete localStorage.room;S.code=null;S.members=0;document.body.classList.remove("in");history.replaceState(null,"",location.pathname);toast(T("deleted"));break;
 case"hi":S.pn=m.n;sys(m.n+" "+T("joined"));if(S.host)setTimeout(()=>send({t:"st",p:!v.paused,c:v.currentTime,r:v.playbackRate}),900);break;
 case"bye":break;
+case"members":S.members=Math.max(1,m.n||1);break;
 case"src":load(m.u,true).then(()=>send({t:"req"}));break;
 case"fmeta":onMeta(m);break;
 case"fgo":if(m.id===S.fid)pump(m.id);break;
@@ -255,8 +256,8 @@ case"pg":if(S.host)send({t:"po",ts:m.ts});break;
 case"po":{const l=(performance.now()-m.ts)/2000;S.lat=S.lat?S.lat*.6+l*.4:l;break}
 case"st":applyState(m);break;
 case"rdy":S.pr=m.r;break;
-case"req":if(S.host){S.want?send({t:"st",p:1,c:v.currentTime,r:v.playbackRate}):pushState()}break;
-case"chat":if(!spamCheck(m,false))addMsg(m,false);break;
+case"req":if(S.host){if(S.want)send({t:"st",p:1,c:v.currentTime,r:v.playbackRate});else{send({t:"st",p:!v.paused,c:v.currentTime,r:v.playbackRate});send({t:"rdy",r:true})}}break;
+case"chat":if(spamCheck(m,false))addMsg(m,false);break;
 case"re":react(m.id,m.e,false);break;
 case"sub":break}}
 /* ---------- buffer gate ---------- */
@@ -273,7 +274,7 @@ const a=ahead(),n=need(),rem=(v.duration||0)-v.currentTime,ok=v.duration>0;
 if(a>S.la+.5){S.la=a;S.lg=Date.now()}
 const stalled=Date.now()-S.lg>3500;
 const r=ok&&(a>=n||a>=rem-.5||(stalled&&a>=Math.min(n,10))||(v.readyState>=4&&rem<n+1)||(Date.now()-S.gt>6000&&a>=1.5));
-const op=online();
+const op=S.members>1;
 bf(T("bufing")+" "+(a|0)+"s / "+(n|0)+"s"+(r&&op&&!S.pr?" · "+T("pw"):""));
 send({t:"rdy",r});
 if(r&&(S.pr||!op)){S.want=false;S.go=true;S.app=true;bf("");v.play().catch(()=>toast("▶"));setTimeout(()=>{S.go=false;S.app=false},600)}},400)}
@@ -303,7 +304,7 @@ if(mm)return mm[0];if(og)return og[1]}catch(e){}}
 return u}
 async function load(u,fromRemote){u=u.trim();if(!u)return;const real=await resolve(u);S.src=u;
 clean();$("#ph").style.display="none";
-if(/\.m3u8/i.test(real)&&window.Hls&&Hls.isSupported()){S.hls=new Hls({maxBufferLength:20,maxMaxBufferLength:20,maxBufferSize:3e8,maxBufferHole:.5,startLevel:0,abrEwmaDefaultEstimate:3e5,abrBandWidthFactor:.7,abrBandWidthUpFactor:.5,fragLoadPolicy:{default:{maxTimeToFirstByteMs:20000,maxLoadTimeMs:120000,timeoutRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000},errorRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000}}}});S.hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal){if(d.type=="networkError")S.hls.startLoad();else if(d.type=="mediaError")S.hls.recoverMediaError()}});S.hls.loadSource(real);S.hls.attachMedia(v)}
+if(/\.m3u8/i.test(real)&&window.Hls&&Hls.isSupported()){S.hls=new Hls({maxBufferLength:15,maxMaxBufferLength:20,maxBufferSize:3e8,maxBufferHole:.5,startLevel:0,abrEwmaDefaultEstimate:3e5,abrBandWidthFactor:.7,abrBandWidthUpFactor:.5,fragLoadPolicy:{default:{maxTimeToFirstByteMs:20000,maxLoadTimeMs:120000,timeoutRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000},errorRetry:{maxNumRetry:8,retryDelayMs:1000,maxRetryDelayMs:8000}}}});S.hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal){if(d.type=="networkError")S.hls.startLoad();else if(d.type=="mediaError")S.hls.recoverMediaError()}});S.hls.loadSource(real);S.hls.attachMedia(v)}
 else if(/\.mpd/i.test(real)&&window.dashjs){S.dash=dashjs.MediaPlayer().create();S.dash.updateSettings({streaming:{buffer:{bufferTimeDefault:20,bufferTimeAtTopQuality:20,bufferTimeAtTopQualityLongForm:20},abr:{initialBitrate:{video:300}},retryAttempts:{MediaSegment:8,MPD:5},retryIntervals:{MediaSegment:1500}}});S.dash.initialize(v,real,false)}
 else if($("#cs").checked){try{$("#dl").classList.add("on");const b=await pdl(real);if(S.src!==u)return;S.blob=b;v.src=b}catch(e){if(e&&e.name=="AbortError")return;toast(T("nocache"));v.src=real}$("#dl").classList.remove("on")}
 else v.src=real;
@@ -323,7 +324,12 @@ await Promise.all(Array.from({length:6},w));
 return URL.createObjectURL(new Blob(parts,{type:h.headers.get("content-type")||"video/mp4"}))}
 function clean(){if(S.rf){send({t:"fstop",id:S.rf.id});S.rf=null;$("#dl").classList.remove("on")}S.lf=null;S.sending=null;if(S.ab){S.ab.abort();S.ab=null}S.want=false;if(S.hls){S.hls.destroy();S.hls=null}if(S.dash){S.dash.reset();S.dash=null}
 if(S.blob){URL.revokeObjectURL(S.blob);S.blob=null}v.removeAttribute("src");$$("#v track").forEach(t=>t.remove())}
-v.addEventListener("error",()=>{if(v.src||S.hls||S.dash)toast(T("bad"))});
+v.addEventListener("error",()=>{if(!v.src&&!S.hls&&!S.dash)return;
+if(S.badTry)return;S.badTry=true;setTimeout(()=>S.badTry=false,5000);
+const u=S.src;
+if(u&&/\.(mp4|m4v|webm|mkv|mov|ogv|ts)(\?|#|$)/i.test(u)&&!S.blob){
+toast(T("res"));pdl(u).then(b=>{if(S.src!==u)return;S.blob=b;v.src=b;const p=v.play();if(p&&p.catch)p.catch(()=>{})}).catch(()=>toast(T("bad")))
+}else toast(T("bad"))});
 $("#go").onclick=()=>load($("#url").value);
 $("#url").onkeydown=e=>{if(e.key=="Enter")load(e.target.value)};
 $("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=S.rf;
@@ -471,7 +477,7 @@ const a=document.createElement("textarea");a.value=t;a.setAttribute("readonly","
 $("#cp").onclick=async()=>{const ok=await copyText(S.code);toast(ok?T("copied"):S.code)};
 $("#jc").onclick=e=>{if(e.target.value)e.target.select()};
 const q=new URLSearchParams(location.search).get("room")||location.hash.slice(1)||localStorage.room||"";
-if(q){$("#jc").value=q.toUpperCase();if(localStorage.n){$("#nm").value=localStorage.n;setTimeout(()=>joinRoom(q),250)}}
+if(q){$("#jc").value=q.toUpperCase();if(localStorage.n){$("#nm").value=localStorage.n;AJT=setTimeout(()=>joinRoom(q),250)}}
 fsState();
 </script>
 </body>

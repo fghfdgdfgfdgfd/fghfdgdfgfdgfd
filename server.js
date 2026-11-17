@@ -67,6 +67,8 @@ const broadcast = (room, obj, except) => {
     if (ws !== except && me.room === room) send(ws, obj);
   }
 };
+const memberCount = (room) => [...clients.values()].filter((m) => m.room === room).length;
+const announceMembers = (room) => broadcast(room, { t: "members", n: memberCount(room) });
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
@@ -121,7 +123,7 @@ wss.on("connection", (ws) => {
       writeJson(ROOMS_FILE, rooms);
       me.room = code; me.name = String(m.n || "Guest").slice(0, 20);
       me.secret = String(m.secret || ""); me.host = true;
-      send(ws, { t: "joined", code, id: me.id, host: true, history: loadChat(code) });
+      send(ws, { t: "joined", code, id: me.id, host: true, members: memberCount(code), history: loadChat(code) });
       return;
     }
 
@@ -133,8 +135,9 @@ wss.on("connection", (ws) => {
       const isHost = !!me.secret && me.secret === rooms[code].secret;
       me.host = isHost;
       touch(code);
-      send(ws, { t: "joined", code, id: me.id, host: isHost, history: loadChat(code) });
+      send(ws, { t: "joined", code, id: me.id, host: isHost, members: memberCount(code), history: loadChat(code) });
       broadcast(code, { t: "hi", n: me.name, id: me.id }, ws);
+      announceMembers(code);
       return;
     }
 
@@ -157,7 +160,7 @@ wss.on("connection", (ws) => {
       const list = loadChat(me.room);
       list.push(msg);
       saveChat(me.room, list);
-      broadcast(me.room, msg);
+      broadcast(me.room, msg, ws);
       return;
     }
 
@@ -167,7 +170,7 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     clients.delete(ws);
-    if (me.room) broadcast(me.room, { t: "bye", id: me.id });
+    if (me.room) { broadcast(me.room, { t: "bye", id: me.id }); announceMembers(me.room); }
   });
 });
 
